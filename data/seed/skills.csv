@@ -1,0 +1,10 @@
+name,category,tagId
+tabular,data type,1001
+image,data type,1002
+text,data type,1003
+nlp,analysis,1004
+computer vision,technique,1005
+time series analysis,technique,1006
+regression,task,1007
+binary classification,task,1008
+tensorflow,packages,1009

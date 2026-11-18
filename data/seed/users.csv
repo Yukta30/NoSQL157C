@@ -1,0 +1,28 @@
+userId,username,displayName,tier,country,registerDate,compTier,golds,silvers,bronzes,source
+k1001,alicechen,Alice Chen,expert,Canada,2017-03-14,expert,1,1,0,kaggle
+k1002,bobsmith,Bob Smith,master,,2016-08-02,expert,1,1,1,kaggle
+k1003,carolwu,"Carol Wu, PhD",novice,,2020-01-20,novice,1,0,0,kaggle
+k1004,davepatel,Dave Patel,master,India,2015-05-30,master,1,2,1,kaggle
+k1005,erinokafor,Erin Okafor,expert,,2018-11-11,expert,1,0,1,kaggle
+k1006,frankmuller,"Frank ""The Tank"" Müller",expert,,2019-02-05,novice,1,1,0,kaggle
+k1007,gracekim,Grace Kim,novice,,2023-06-17,novice,0,1,0,kaggle
+k1008,heidilarsen,Heidi Larsen,expert,,2018-04-09,expert,1,1,0,kaggle
+k1009,ivanpetrov,Ivan Petrov,novice,,2024-01-03,novice,1,0,0,kaggle
+k1010,judygarcia,Judy García,expert,,2019-09-22,novice,0,1,0,kaggle
+k1011,mallorystone,Mallory Stone,novice,,2021-07-07,novice,0,0,1,kaggle
+k1012,niajsingh,Niaj Singh,novice,,2020-10-10,novice,0,0,2,kaggle
+k1013,oliviabrown,Olivia Brown,novice,,2020-12-01,novice,0,0,1,kaggle
+k1014,peggyhopper,Peggy Hopper,grandmaster,,2012-02-29,grandmaster,5,2,1,kaggle
+k1015,trentnguyen,Trent Nguyen,master,,2016-03-03,expert,1,1,0,kaggle
+k1016,sybilrao,Sybil Rao 🚀,expert,,2019-05-15,expert,0,0,1,kaggle
+k1017,victorli,李伟 (Victor Li),novice,,2022-08-08,novice,1,0,0,kaggle
+k1018,walterkaggle,Walter (Kaggle Staff),staff,,2014-01-01,,0,0,0,kaggle
+k1019,yolandaruiz,Yolanda Ruiz,expert,,2018-02-14,novice,0,0,1,kaggle
+k1020,zaraahmed,Zara Ahmed,novice,,2021-03-21,novice,0,0,1,kaggle
+k1021,quentinmoreau,Quentin Moreau,novice,,2021-04-01,novice,0,0,1,kaggle
+k1022,rupertgray,Rupert O'Neil Gray,novice,,2021-04-02,novice,0,0,1,kaggle
+k1023,umasato,Uma Sato,expert,,2017-07-17,expert,0,1,0,kaggle
+k1024,xavierdiaz,Xavier Díaz,novice,,2022-02-22,novice,0,1,0,kaggle
+k1025,wendyclark,Wendy Clark,master,,2015-10-31,master,1,0,0,kaggle
+u5eed0000000000000000000000000001,newbie_sam,Sam (new here),,,2026-11-01,,0,0,0,app
+u5eed0000000000000000000000000002,lee_app,Lee,,,2026-11-15,,0,0,0,app

@@ -1,0 +1,16 @@
+competitionId,skill
+9001,tabular
+9001,binary classification
+9002,image
+9002,computer vision
+9003,text
+9003,nlp
+9004,tabular
+9004,time series analysis
+9004,regression
+9006,image
+9006,computer vision
+9006,tensorflow
+9007,text
+9007,nlp
+9007,time series analysis

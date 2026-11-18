@@ -1,0 +1,8 @@
+competitionId,slug,title,segment,year,maxTeamSize,totalTeams
+9001,seed-credit-risk,Seed Credit Risk,Featured,2021,5,1200
+9002,seed-retina-scan,Seed Retina Scan Challenge,Research,2022,5,800
+9003,seed-clinical-notes,Seed Clinical Notes NLP,Featured,2023,5,1500
+9004,seed-energy-forecast,Seed Energy Demand Forecast,Playground,2024,3,600
+9005,seed-match-outcome,Seed Match Outcome Prediction,Playground,2022,4,400
+9006,seed-protein-atlas,Seed Protein Image Atlas,Research,2025,5,300
+9007,seed-market-sentiment,Seed Market Sentiment,Featured,2024,5,900

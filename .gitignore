@@ -1,0 +1,21 @@
+# Raw Meta Kaggle files (several GB) and pipeline output - regenerate locally
+data/raw/
+data/processed/
+*.duckdb
+*.duckdb.wal
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets (Neo4j credentials etc.)
+.env
+.streamlit/secrets.toml
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,75 @@
+userId,skill,weight,competitions,medals,source
+k1001,nlp,0.8647,4,2,kaggle
+k1001,text,0.8647,4,2,kaggle
+k1001,time series analysis,0.4866,1,1,kaggle
+k1002,computer vision,0.3408,2,1,kaggle
+k1002,image,0.3408,2,1,kaggle
+k1002,nlp,0.8111,2,2,kaggle
+k1002,text,0.8111,2,2,kaggle
+k1002,time series analysis,0.4866,1,1,kaggle
+k1003,nlp,0.6321,1,1,kaggle
+k1003,text,0.6321,1,1,kaggle
+k1004,binary classification,0.8111,2,2,kaggle
+k1004,regression,0.6321,2,2,kaggle
+k1004,tabular,0.9305,4,4,kaggle
+k1004,time series analysis,0.6321,2,2,kaggle
+k1005,computer vision,0.7947,3,2,kaggle
+k1005,image,0.7947,3,2,kaggle
+k1005,tensorflow,0.6321,1,1,kaggle
+k1006,binary classification,0.6321,1,1,kaggle
+k1006,regression,0.4866,1,1,kaggle
+k1006,tabular,0.8111,2,2,kaggle
+k1006,time series analysis,0.4866,1,1,kaggle
+k1007,regression,0.5276,2,1,kaggle
+k1007,tabular,0.5276,2,1,kaggle
+k1007,time series analysis,0.5276,2,1,kaggle
+k1008,computer vision,0.8111,2,2,kaggle
+k1008,image,0.8111,2,2,kaggle
+k1008,tensorflow,0.6321,1,1,kaggle
+k1009,computer vision,0.6321,1,1,kaggle
+k1009,image,0.6321,1,1,kaggle
+k1009,tensorflow,0.6321,1,1,kaggle
+k1010,computer vision,0.4866,1,1,kaggle
+k1010,image,0.4866,1,1,kaggle
+k1012,binary classification,0.2835,1,1,kaggle
+k1012,tabular,0.2835,1,1,kaggle
+k1013,binary classification,0.2835,1,1,kaggle
+k1013,tabular,0.2835,1,1,kaggle
+k1014,computer vision,0.6321,2,2,kaggle
+k1014,image,0.6321,2,2,kaggle
+k1014,nlp,0.9305,3,3,kaggle
+k1014,regression,0.8647,2,2,kaggle
+k1014,tabular,0.9502,3,3,kaggle
+k1014,tensorflow,0.7364,2,2,kaggle
+k1014,text,0.9305,3,3,kaggle
+k1014,time series analysis,0.8647,2,2,kaggle
+k1015,nlp,0.8111,2,2,kaggle
+k1015,text,0.8111,2,2,kaggle
+k1015,time series analysis,0.6321,1,1,kaggle
+k1016,computer vision,0.2835,1,1,kaggle
+k1016,image,0.2835,1,1,kaggle
+k1016,tensorflow,0.2835,1,1,kaggle
+k1017,regression,0.6321,1,1,kaggle
+k1017,tabular,0.6321,1,1,kaggle
+k1017,time series analysis,0.6321,1,1,kaggle
+k1018,nlp,0.2835,1,1,kaggle
+k1018,text,0.2835,1,1,kaggle
+k1018,time series analysis,0.2835,1,1,kaggle
+k1019,nlp,0.2835,1,1,kaggle
+k1019,text,0.2835,1,1,kaggle
+k1019,time series analysis,0.2835,1,1,kaggle
+k1020,computer vision,0.2835,1,1,kaggle
+k1020,image,0.2835,1,1,kaggle
+k1021,computer vision,0.2835,1,1,kaggle
+k1021,image,0.2835,1,1,kaggle
+k1022,computer vision,0.2835,1,1,kaggle
+k1022,image,0.2835,1,1,kaggle
+k1023,binary classification,0.4866,1,1,kaggle
+k1023,tabular,0.4866,1,1,kaggle
+k1024,binary classification,0.4866,1,1,kaggle
+k1024,tabular,0.4866,1,1,kaggle
+k1025,nlp,0.6321,1,1,kaggle
+k1025,text,0.6321,1,1,kaggle
+k1025,time series analysis,0.6321,1,1,kaggle
+u5eed0000000000000000000000000001,nlp,0.5,0,0,self
+u5eed0000000000000000000000000001,text,0.5,0,0,self
