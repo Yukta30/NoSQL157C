@@ -25,6 +25,7 @@ pages = [
     st.Page("pages/discover.py", title="Discover", icon=":material/search:", default=True),
     st.Page("pages/profile.py", title="Profile", icon=":material/person:"),
     st.Page("pages/recommendations.py", title="Recommendations", icon=":material/recommend:"),
+    st.Page("pages/team_builder.py", title="Team builder", icon=":material/groups:"),
     st.Page("pages/network.py", title="Network", icon=":material/hub:"),
 ]
 
