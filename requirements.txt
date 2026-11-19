@@ -9,5 +9,5 @@ python-dotenv>=1.0
 
 
 # Frontend
-streamlit>=1.50
+streamlit>=1.52
 streamlit-agraph>=0.0.45
