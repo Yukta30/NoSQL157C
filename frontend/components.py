@@ -37,9 +37,12 @@ def user_badges(user):
             st.badge("New member", icon=":material/fiber_new:", color="green")
 
 
+MEDALS_LABEL = "Medals " + "".join(MEDAL_ICONS.values())
+
+
 def medals_text(user):
-    parts = [f"{MEDAL_ICONS[m]} {user.get(m + 's', 0)}" for m in ("gold", "silver", "bronze")]
-    return "  ".join(parts)
+    """'gold · silver · bronze' counts, short enough for a metric column."""
+    return " · ".join(str(user.get(m + "s", 0)) for m in ("gold", "silver", "bronze"))
 
 
 def _set_flash(kind, message):

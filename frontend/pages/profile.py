@@ -45,7 +45,7 @@ cols = st.columns(4)
 cols[0].metric("Followers", profile["followers"])
 cols[1].metric("Following", profile["following"])
 cols[2].metric("Collaborators", profile["collaborators"], help="People they've shared a team with")
-cols[3].metric("Medals", components.medals_text(profile))
+cols[3].metric(components.MEDALS_LABEL, components.medals_text(profile), help="Gold · silver · bronze")
 
 # ---------- how you're connected ----------
 if me and not is_me:
