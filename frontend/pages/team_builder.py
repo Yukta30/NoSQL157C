@@ -32,8 +32,10 @@ if not request:
     st.stop()
 
 req_skills, req_size, req_me, req_include = request
-if req_me != me:  # logged-in user changed since the team was built
+if req_me != me:  # the team was built for whoever was logged in before
     st.session_state.pop("team_request", None)
+    components.empty_state("You switched users, so the previous team was cleared. Build a new one above.",
+                           icon=":material/swap_horiz:")
     st.stop()
 
 try:
