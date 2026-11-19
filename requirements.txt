@@ -1,0 +1,5 @@
+# Runtime: Neo4j driver used by scripts/load_neo4j.py
+neo4j>=5.23
+
+# Tests
+pytest>=8
