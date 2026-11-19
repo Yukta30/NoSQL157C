@@ -70,6 +70,8 @@ if me and not is_me:
         with st.expander("Why you might team up"):
             components.bullets(explanation["reasons"])
 
+st.page_link(components.NETWORK, label=f"View {'your' if is_me else name + '’s'} network",
+             icon=":material/hub:", query_params={"user": user_id})
 
 # ---------- details ----------
 skills_tab, interests_tab, teams_tab, people_tab = st.tabs(

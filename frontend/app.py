@@ -24,6 +24,7 @@ from frontend import components, session  # noqa: E402
 pages = [
     st.Page("pages/discover.py", title="Discover", icon=":material/search:", default=True),
     st.Page("pages/profile.py", title="Profile", icon=":material/person:"),
+    st.Page("pages/network.py", title="Network", icon=":material/hub:"),
 ]
 
 nav = st.navigation(pages)
