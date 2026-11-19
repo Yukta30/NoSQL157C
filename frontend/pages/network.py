@@ -68,7 +68,7 @@ def legend_html(center_name, show_me):
         (line(WORKED_COLOR, "solid"), "Worked together (thicker = more teams)"),
         (line(FOLLOW_COLOR, "dashed"), "Follows (arrow points to who's followed)"),
     ]
-    return "<div style='line-height:2'>" + "<br>".join(s + label for s, label in rows) + "</div>"
+    return "".join(f"<div style='margin:0 0 8px;line-height:1.4'>{s}{label}</div>" for s, label in rows)
 
 
 def graph_config():
