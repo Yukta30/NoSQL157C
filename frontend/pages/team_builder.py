@@ -72,7 +72,7 @@ with team_col:
                 if m["isYou"]:
                     st.markdown(f"**{i}. {display_name(m)} (you)**")
                 else:
-                    components.user_link({**m, "displayName": f"{i}. {display_name(m)}"})
+                    components.user_link(m, label=f"{i}. {display_name(m)} · @{m['username']}")
                 components.user_badges(m)
                 components.bullets(m["reasons"])
             with right:

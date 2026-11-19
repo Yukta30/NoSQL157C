@@ -21,9 +21,9 @@ TIER_COLORS = {
 MEDAL_ICONS = {"gold": "🥇", "silver": "🥈", "bronze": "🥉"}
 
 
-def user_link(user, help=None):
-    """Link to a user's profile page."""
-    st.page_link(PROFILE, label=f"{display_name(user)} · @{user['username']}",
+def user_link(user, label=None, help=None):
+    """Link to a user's profile page. Default label: 'Name · @username'."""
+    st.page_link(PROFILE, label=label or f"{display_name(user)} · @{user['username']}",
                  query_params={"user": user["userId"]}, help=help)
 
 
