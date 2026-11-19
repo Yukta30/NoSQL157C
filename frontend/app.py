@@ -15,6 +15,10 @@ import streamlit as st  # noqa: E402
 
 st.set_page_config(page_title="Teamatcha", page_icon="🍵", layout="wide")
 
+# Import order matters: backend/db.py raises at import time when .env is
+# missing. require_backend() imports it inside a try and shows setup help, so
+# nothing that imports `backend` (session, components, data, pages) may be
+# imported above this point.
 from frontend import startup  # noqa: E402
 
 startup.require_backend()
