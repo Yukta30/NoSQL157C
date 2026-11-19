@@ -1,10 +1,27 @@
+import atexit
 import os
+import time
 
+import neo4j
 from dotenv import load_dotenv
-from neo4j import GraphDatabase, NotificationDisabledCategory, RoutingControl
+from neo4j import GraphDatabase, RoutingControl
+from neo4j.exceptions import ServiceUnavailable, SessionExpired
 from neo4j.time import Date, DateTime
 
 load_dotenv()
+
+_DRIVER_MAJOR = int(neo4j.__version__.split(".")[0])
+
+
+def _hide_deprecation_notices():
+    """Driver option that hides server deprecation notices (e.g. for the
+    fulltext procedure). Driver 6 renamed it; driver 5 marks the new name as a
+    preview feature, so pick by version to stay warning-free on both."""
+    if _DRIVER_MAJOR >= 6:
+        from neo4j import NotificationDisabledClassification
+        return {"notifications_disabled_classifications": [NotificationDisabledClassification.DEPRECATION]}
+    from neo4j import NotificationDisabledCategory
+    return {"notifications_disabled_categories": [NotificationDisabledCategory.DEPRECATION]}
 
 
 def _to_python(value):
@@ -41,15 +58,25 @@ class Neo4jConnection:
         self.driver = GraphDatabase.driver(
             self.uri,
             auth=(self.username, self.password),
-            # Hide server deprecation notices (e.g. fulltext procedure) from logs.
-            notifications_disabled_categories=[
-                NotificationDisabledCategory.DEPRECATION
-            ],
+            **_hide_deprecation_notices(),
         )
 
-    def verify_connection(self):
-        self.driver.verify_connectivity()
-        return True
+    def verify_connection(self, attempts=4, delay=1.0):
+        """Check the database is reachable.
+
+        Aura sometimes fails the first routing request ("Unable to retrieve
+        routing information"). Queries are retried by the driver, but
+        verify_connectivity() isn't, so retry here before giving up.
+        Wrong credentials (AuthError) are raised immediately.
+        """
+        for attempt in range(1, attempts + 1):
+            try:
+                self.driver.verify_connectivity()
+                return True
+            except (ServiceUnavailable, SessionExpired):
+                if attempt == attempts:
+                    raise
+                time.sleep(delay * attempt)
 
     def execute_query(self, query, parameters=None, write=False):
         """Run a Cypher query and return a list of plain dicts.
@@ -74,3 +101,4 @@ class Neo4jConnection:
 
 
 db = Neo4jConnection()
+atexit.register(db.close)

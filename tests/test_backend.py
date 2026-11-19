@@ -282,7 +282,7 @@ def test_recommendation_is_explained():
     assert top["username"] == "carolwu" and top["fallback"] is False
     assert top["reasons"] == [
         "Worked together on 1 team",
-        "2 shared skills: text, nlp",
+        "2 shared skills: nlp, text",   # equal strength: alphabetical
         "2 shared interests: medicine, health",
         "1 mutual connection: Bob Smith",
     ]
@@ -300,9 +300,32 @@ def test_cold_start_fallback():
 def test_explain_recommendation():
     e = recommendations.explain_recommendation(ALICE, BOB)    # already followed: still explainable
     assert e["workedTogetherTimes"] == 2 and "Worked together on 2 teams" in e["reasons"]
+    # "Carol Wu, PhD" contains a comma, so people are separated with " · ".
+    assert "2 mutual connections: Carol Wu, PhD · Erin Okafor" in e["reasons"]
     assert recommendations.explain_recommendation(ALICE, ALICE) is None
     assert recommendations.explain_recommendation(ALICE, "nope") is None
     assert recommendations.recommend_users("nope") == []
+
+
+def test_verify_connection_retries_transient_errors(monkeypatch):
+    from neo4j.exceptions import AuthError, ServiceUnavailable
+
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3:
+            raise ServiceUnavailable("Unable to retrieve routing information")
+
+    monkeypatch.setattr(db.driver, "verify_connectivity", flaky)
+    assert db.verify_connection(delay=0) is True and len(calls) == 3
+
+    calls.clear()
+    monkeypatch.setattr(db.driver, "verify_connectivity",
+                        lambda: (calls.append(1), (_ for _ in ()).throw(AuthError("bad password"))))
+    with pytest.raises(AuthError):
+        db.verify_connection(delay=0)
+    assert len(calls) == 1                     # wrong credentials are not retried
 
 
 # ----------------------------------------------------------- team_builder.py

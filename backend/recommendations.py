@@ -21,6 +21,10 @@ import math
 
 from backend.db import db
 
+# People's names can contain commas ("Carol Wu, PhD"), so lists of people
+# use a separator that can't be confused with one.
+PEOPLE_SEP = " · "
+
 WEIGHTS = {
     "skills": 3.0,
     "interests": 1.5,
@@ -93,9 +97,9 @@ def _overlap_score(shared, total_users):
     return sum(min(t["mine"], t["theirs"]) * _rarity(t["holders"], total_users) for t in shared)
 
 
-def _names(items, limit=4):
+def _names(items, limit=4, sep=", "):
     names = [x if isinstance(x, str) else x["name"] for x in items]
-    shown = ", ".join(names[:limit])
+    shown = sep.join(names[:limit])
     return shown + (f" +{len(names) - limit} more" if len(names) > limit else "")
 
 
@@ -107,7 +111,9 @@ def _score(row):
     total = row["totalUsers"]
     # Strongest shared tags first, so explanations lead with the best evidence.
     for key in ("sharedSkills", "sharedInterests"):
-        row[key].sort(key=lambda t: -min(t["mine"], t["theirs"]) * _rarity(t["holders"], total))
+        # Name breaks ties so the order never depends on how Neo4j returns rows.
+        row[key].sort(key=lambda t: (-round(min(t["mine"], t["theirs"]) * _rarity(t["holders"], total), 9),
+                                     t["name"]))
     row["mutualConnections"].sort()
 
     breakdown = {
@@ -126,7 +132,7 @@ def _score(row):
     if row["sharedInterests"]:
         reasons.append(f"{_plural(len(row['sharedInterests']), 'shared interest')}: {_names(row['sharedInterests'])}")
     if row["mutualConnections"]:
-        reasons.append(f"{_plural(len(row['mutualConnections']), 'mutual connection')}: {_names(row['mutualConnections'], 3)}")
+        reasons.append(f"{_plural(len(row['mutualConnections']), 'mutual connection')}: {_names(row['mutualConnections'], 3, sep=PEOPLE_SEP)}")
 
     return {
         "userId": row["userId"],

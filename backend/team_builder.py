@@ -21,6 +21,7 @@ and every pick can be explained by the gain that caused it.
 """
 
 from backend.db import db
+from backend.recommendations import PEOPLE_SEP
 
 WORKED_WITH_BONUS = 0.25  # per current team member they've been teammates with
 FOLLOWS_BONUS = 0.10      # per current team member they follow / are followed by
@@ -147,7 +148,8 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
     team = []
 
     def add(cand, coverage, bonus, worked_mates, follow_mates, is_you=False):
-        improved = [s for s, w in cand["weights"].items() if w > best[s] + _EPS]
+        improved = sorted((s for s, w in cand["weights"].items() if w > best[s] + _EPS),
+                          key=lambda s: (-cand["weights"][s], s))
         for s in improved:
             best[s] = cand["weights"][s]
             best_by[s] = cand["userId"]
@@ -158,15 +160,15 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
         if improved:
             reasons.append("Adds " + ", ".join(f"{s} ({cand['weights'][s]:.2f})" for s in improved))
         if worked_mates:
-            reasons.append("Worked with " + ", ".join(name(m) for m in worked_mates))
+            reasons.append("Worked with " + PEOPLE_SEP.join(name(m) for m in worked_mates))
         if follow_mates:
-            reasons.append("Connected to " + ", ".join(name(m) for m in follow_mates))
+            reasons.append("Connected to " + PEOPLE_SEP.join(name(m) for m in follow_mates))
         team.append({
             "userId": cand["userId"], "username": cand["username"],
             "displayName": cand["displayName"], "tier": cand["tier"],
             "source": cand["source"], "isYou": is_you,
             "skills": [{k: x[k] for k in ("skill", "weight", "medals", "competitions", "source")}
-                       for x in sorted(cand["skills"], key=lambda x: -x["weight"])],
+                       for x in sorted(cand["skills"], key=lambda x: (-x["weight"], x["skill"]))],
             "coverageGain": round(coverage, 4), "chemistryBonus": round(bonus, 4),
             "reasons": reasons,
         })
@@ -246,6 +248,6 @@ def rank_candidates(required_skills, limit=10, exclude_user_ids=None):
         {"userId": r["userId"], "username": r["username"], "displayName": r["displayName"],
          "tier": r["tier"], "totalWeight": round(r["totalWeight"], 4),
          "skillsMatched": len(r["skills"]), "skillsRequired": len(skills),
-         "skills": sorted(r["skills"], key=lambda x: -x["weight"])}
+         "skills": sorted(r["skills"], key=lambda x: (-x["weight"], x["skill"]))}
         for r in rows
     ]
