@@ -3,3 +3,7 @@ neo4j>=5.23
 
 # Tests
 pytest>=8
+
+# Backend
+python-dotenv>=1.0
+
