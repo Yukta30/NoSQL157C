@@ -12,7 +12,7 @@ data/raw/                   Meta Kaggle CSVs (gitignored; download per contract 
 data/processed/             preprocess_data.py output (gitignored)
 scripts/make_seed.py        regenerates data/seed/
 scripts/verify_sources.py   week-1 checks of the raw files
-frontend/app.py             Streamlit app (pages in frontend/pages/)
+frontend/app.py             Streamlit app (pages in frontend/app_pages/)
 ```
 
 Planned (see the architecture doc): `scripts/preprocess_data.py`, `scripts/load_neo4j.py`, `backend/`, `frontend/`.

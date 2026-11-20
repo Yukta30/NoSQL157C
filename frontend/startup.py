@@ -1,6 +1,8 @@
 """Startup checks: stop with setup help instead of a stack trace when the
 backend can't reach Neo4j."""
 
+import os
+
 import streamlit as st
 
 ENV_HELP = """
@@ -14,6 +16,15 @@ NEO4J_DATABASE=neo4j
 ```
 
 Then reload this page. See **Running the frontend** in the README.
+"""
+
+AURA_HELP = """
+Neo4j AuraDB didn't answer in time. This is usually temporary (Aura sometimes
+fails its first routing requests), so wait a few seconds and try again.
+
+If it keeps happening, check that the AuraDB instance is running (free
+instances pause after a few days without use) and that `NEO4J_URI` in `.env`
+is right.
 """
 
 NEO4J_HELP = """
@@ -56,11 +67,16 @@ def require_backend():
         _fail("Neo4j rejected the username or password.",
               "Check `NEO4J_USERNAME` and `NEO4J_PASSWORD` in `.env`, then restart the app.")
     except ServiceUnavailable:
+        uri = os.environ.get("NEO4J_URI", "")
+        if "databases.neo4j.io" in uri:  # AuraDB
+            _fail("Can't reach Neo4j AuraDB right now.", AURA_HELP, retry=True)
         _fail("Can't reach Neo4j.", NEO4J_HELP)
 
 
-def _fail(title, help_md):
-    st.title("Teamatcha")
+def _fail(title, help_md, retry=False):
+    st.title("CS 157C Project")
     st.error(f"**{title}**")
     st.markdown(help_md)
+    if retry:
+        st.button("Try again", icon=":material/refresh:", type="primary")
     st.stop()

@@ -1,7 +1,8 @@
 """Headless tests for the Streamlit frontend (streamlit.testing AppTest).
 
-Every page is rendered logged out, as Alice and as Lee, plus a few checks of
-page-specific behaviour. Read-only: nothing here clicks Follow.
+Logged out, only the login screen exists. Every feature page is rendered as
+Alice and as Lee, plus a few checks of page-specific behaviour. Read-only:
+nothing here clicks Follow.
 
 They need Neo4j credentials in .env and the seed graph loaded (README,
 "Running the frontend"); otherwise they're skipped.
@@ -26,8 +27,8 @@ APP = os.path.join(ROOT, "frontend", "app.py")
 
 ALICE, BOB = "k1001", "k1002"
 LEE = "u5eed0000000000000000000000000002"
-USERS = {"logged_out": None, "alice": ALICE, "lee": LEE}
-PAGES = ["discover", "profile", "recommendations", "team_builder", "network"]
+USERS = {"alice": ALICE, "lee": LEE}
+PAGES = ["discover", "profile", "recommendations", "team_builder", "projects", "inbox", "network"]
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -48,7 +49,7 @@ def open_page(page, me=None, **query_params):
     if me:
         at.session_state["me"] = me
     at.run()
-    at.switch_page(f"pages/{page}.py")
+    at.switch_page(f"app_pages/{page}.py")
     for key, value in query_params.items():
         at.query_params[key] = value
     return at.run()
@@ -63,6 +64,21 @@ def assert_clean(at):
 @pytest.mark.parametrize("page", PAGES)
 def test_page_renders(page, who):
     assert_clean(open_page(page, USERS[who]))
+
+
+def test_logged_out_shows_login():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    assert_clean(at)
+    assert at.button(key="login_submit") and at.button(key="switch_to_signup")
+    assert at.button(key=f"login_{ALICE}") and at.button(key=f"login_{LEE}")
+
+
+def test_logging_in_opens_home():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.button(key=f"login_{ALICE}").click().run()
+    assert_clean(at)
+    assert at.session_state["me"] == ALICE
+    assert at.title[0].value == "Hi, Alice"
 
 
 def test_search_finds_alice():
@@ -99,8 +115,9 @@ def test_new_user_network_empty_state():
 
 def test_team_builder_builds_team():
     at = open_page("team_builder", ALICE)
-    at.multiselect[0].set_value(["nlp", "computer vision"])
-    at.button[0].click()
+    at.multiselect(key="team_skills_analysis").set_value(["nlp"])
+    at.multiselect(key="team_skills_technique").set_value(["computer vision"])
+    at.button(key="build_team").click()
     at.run()
     assert_clean(at)
     metrics = {m.label: m.value for m in at.metric}
@@ -110,8 +127,8 @@ def test_team_builder_builds_team():
 
 def test_team_builder_cleared_after_switching_user():
     at = open_page("team_builder", ALICE)
-    at.multiselect[0].set_value(["nlp"])
-    at.button[0].click()
+    at.multiselect(key="team_skills_analysis").set_value(["nlp"])
+    at.button(key="build_team").click()
     at.run()
     at.session_state["me"] = LEE
     at.run()

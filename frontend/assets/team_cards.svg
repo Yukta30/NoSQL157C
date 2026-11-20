@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 190" width="320" height="190">
+  <!-- soft shadow card -->
+  <rect x="14" y="52" width="150" height="104" rx="20" fill="#EFE2D6" transform="rotate(-8 89 104)"/>
+  <!-- back profile card -->
+  <g transform="rotate(-5 120 62)">
+    <rect x="48" y="16" width="160" height="100" rx="18" fill="#F7E8DF" stroke="#D8A898" stroke-width="3"/>
+    <circle cx="90" cy="52" r="14" fill="#800020"/>
+    <path d="M66 98 a24 20 0 0 1 48 0 z" fill="#800020"/>
+    <rect x="128" y="40" width="58" height="7" rx="3.5" fill="#D8A898"/>
+    <rect x="128" y="56" width="40" height="7" rx="3.5" fill="#E8C9BC"/>
+  </g>
+  <!-- front profile card -->
+  <g transform="rotate(6 205 118)">
+    <rect x="118" y="66" width="176" height="108" rx="20" fill="#F9ECE4" stroke="#D49C8C" stroke-width="3"/>
+    <circle cx="164" cy="104" r="15" fill="#C46A6A"/>
+    <path d="M139 152 a25 21 0 0 1 50 0 z" fill="#C46A6A"/>
+    <rect x="206" y="92" width="62" height="7" rx="3.5" fill="#D8A898"/>
+    <circle cx="252" cy="138" r="21" fill="#800020"/>
+    <path d="M242 138 h18 M253 130 l8 8 l-8 8" stroke="#FFFDF9" stroke-width="3.5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- sparkle -->
+  <path d="M296 14 L300 30 L316 34 L300 38 L296 54 L292 38 L276 34 L292 30 Z" fill="#800020"/>
+</svg>

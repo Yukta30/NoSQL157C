@@ -7,7 +7,7 @@ counts, connection status, recommendations and the network.
 
 import streamlit as st
 
-from backend import recommendations, social, team_builder, users
+from backend import accounts, projects, recommendations, social, team_builder, users
 
 _cached = st.cache_data(ttl=300, show_spinner=False)
 
@@ -25,6 +25,11 @@ def get_user(user_id):
 
 
 @_cached
+def get_user_by_username(username):
+    return users.get_user_by_username(username)
+
+
+@_cached
 def get_user_profile(user_id):
     return users.get_user_profile(user_id)
 
@@ -32,6 +37,34 @@ def get_user_profile(user_id):
 @_cached
 def list_skills():
     return users.list_skills()
+
+
+@_cached
+def graph_stats():
+    return users.get_graph_stats()
+
+
+@_cached
+def list_interests():
+    return users.list_interests()
+
+
+# ---------- accounts (writes clear the cache: new users show up in search) ----------
+
+def register_user(**fields):
+    user = accounts.register_user(**fields)
+    st.cache_data.clear()
+    return user
+
+
+def authenticate(username, password):
+    return accounts.authenticate(username, password)
+
+
+def update_profile(user_id, **fields):
+    user = accounts.update_profile(user_id, **fields)
+    st.cache_data.clear()
+    return user
 
 
 # ---------- social ----------
@@ -54,6 +87,11 @@ def following(user_id):
 @_cached
 def collaborators(user_id):
     return social.get_collaborators(user_id)
+
+
+@_cached
+def mutual_follows(user_id):
+    return social.get_mutual_follows(user_id)
 
 
 @_cached
@@ -86,12 +124,81 @@ def explain_recommendation(me, other):
 
 
 @_cached
-def build_team(skills, team_size, me, include_me):
+def build_team(skills, team_size, me, include_me, pinned=()):
+    """pinned: people the user added by hand; they're kept and the rest is built around them."""
     return team_builder.build_team(
-        list(skills), team_size=team_size, current_user_id=me, include_me=include_me
+        list(skills), team_size=team_size, current_user_id=me, include_me=include_me,
+        member_ids=list(pinned),
     )
 
 
 @_cached
-def rank_candidates(skills, limit=10):
-    return team_builder.rank_candidates(list(skills), limit=limit)
+def rank_candidates(skills, limit=10, exclude=()):
+    return team_builder.rank_candidates(list(skills), limit=limit, exclude_user_ids=list(exclude))
+
+
+
+# ---------- projects & invites (every write clears the cache) ----------
+
+@_cached
+def get_project(project_id):
+    return projects.get_project(project_id)
+
+
+@_cached
+def user_projects(user_id):
+    return projects.get_user_projects(user_id)
+
+
+@_cached
+def inbox(user_id):
+    return projects.get_inbox(user_id)
+
+
+@_cached
+def pending_invite_count(user_id):
+    return projects.pending_invite_count(user_id)
+
+
+@_cached
+def invitable_projects(owner_id, invitee_id):
+    return projects.get_invitable_projects(owner_id, invitee_id)
+
+
+@_cached
+def suggest_members(project_id):
+    return projects.suggest_members(project_id)
+
+
+def _write(fn, *args, **kwargs):
+    result = fn(*args, **kwargs)
+    st.cache_data.clear()
+    return result
+
+
+def create_project(*args, **kwargs):
+    return _write(projects.create_project, *args, **kwargs)
+
+
+def invite(*args, **kwargs):
+    return _write(projects.invite, *args, **kwargs)
+
+
+def respond_invite(*args, **kwargs):
+    return _write(projects.respond, *args, **kwargs)
+
+
+def cancel_invite(*args, **kwargs):
+    return _write(projects.cancel_invite, *args, **kwargs)
+
+
+def leave_project(*args, **kwargs):
+    return _write(projects.leave, *args, **kwargs)
+
+
+def set_project_status(*args, **kwargs):
+    return _write(projects.set_status, *args, **kwargs)
+
+
+def delete_project(*args, **kwargs):
+    return _write(projects.delete_project, *args, **kwargs)
