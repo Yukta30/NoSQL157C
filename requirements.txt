@@ -9,5 +9,8 @@ python-dotenv>=1.0
 
 
 # Frontend
-streamlit>=1.52
-streamlit-agraph>=0.0.45
+streamlit>=1.67  # st.echarts_chart, st.menu_button, text_alignment
+
+# Data pipeline (scripts/preprocess_data.py, scripts/verify_sources.py)
+duckdb>=1.1
+kaggle>=1.7  # download Meta Kaggle: see docs/csv_contract.md section 1
