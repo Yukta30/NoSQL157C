@@ -23,6 +23,10 @@ FOR (c:Competition) REQUIRE c.competitionId IS UNIQUE;
 CREATE CONSTRAINT team_id IF NOT EXISTS
 FOR (t:Team) REQUIRE t.teamId IS UNIQUE;
 
+// App projects (backend/projects.py)
+CREATE CONSTRAINT project_id IF NOT EXISTS
+FOR (p:Project) REQUIRE p.projectId IS UNIQUE;
+
 // ---------- Search & filter indexes ----------
 // Discover page: search by username / display name ("Alex")
 CREATE FULLTEXT INDEX user_search IF NOT EXISTS
@@ -60,4 +64,11 @@ CREATE INDEX competition_segment IF NOT EXISTS FOR (c:Competition) ON (c.segment
 // (User)-[:INTERESTED_IN {weight, competitions, source}]->(Interest)
 // (User)-[:FOLLOWS {since}]->(User)
 // (User)-[:WORKED_WITH {times}]-(User)   // derived after load, see contract section 6
+//
+// App projects (created in the app, never loaded from CSV; see backend/projects.py):
+// (:Project {projectId, title, description, teamSize, status, createdAt})
+// (User)-[:OWNS]->(Project)
+// (User)-[:JOINED {role, since}]->(Project)
+// (User)-[:INVITED {status, invitedBy, message, at, respondedAt}]->(Project)
+// (Project)-[:NEEDS]->(Skill)
 // =====================================================================

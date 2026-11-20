@@ -101,7 +101,7 @@ def _gain(cand, best, team_ids, worked, follows):
 
 
 def build_team(required_skills, team_size=3, current_user_id=None, include_me=True,
-               exclude_user_ids=None, pool_size=200, min_gain=MIN_GAIN):
+               exclude_user_ids=None, pool_size=200, min_gain=MIN_GAIN, member_ids=()):
     """Recommend a team that covers the required skills.
 
     required_skills : list of skill names, e.g. ["nlp", "computer vision", "tensorflow"]
@@ -110,6 +110,8 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
                       first member and their skills count toward coverage; their
                       connections also earn chemistry bonuses.
     exclude_user_ids: people who should not be picked.
+    member_ids      : people already on the team (e.g. a project's members); they
+                      are added right after you and count toward coverage.
     min_gain        : minimum coverage improvement for someone to be added.
 
     Returns a dict with members (in pick order, with reasons), per-skill
@@ -127,11 +129,13 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
 
     exclude = set(exclude_user_ids or [])
     include_ids = {current_user_id} if (current_user_id and include_me) else set()
+    member_ids = [m for m in dict.fromkeys(member_ids or ()) if m and m != current_user_id]
+    include_ids |= set(member_ids)
     if not include_me and current_user_id:
         exclude.add(current_user_id)
 
     rows = _fetch_candidates(skills, exclude, include_ids, pool_size) if skills else []
-    if include_ids and not any(r["userId"] == current_user_id for r in rows):
+    if current_user_id and include_me and not any(r["userId"] == current_user_id for r in rows):
         raise ValueError(f"Unknown user: {current_user_id}")
 
     candidates = {}
@@ -147,7 +151,7 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
     best_by = {s: None for s in skills}
     team = []
 
-    def add(cand, coverage, bonus, worked_mates, follow_mates, is_you=False):
+    def add(cand, coverage, bonus, worked_mates, follow_mates, is_you=False, is_member=False):
         improved = sorted((s for s, w in cand["weights"].items() if w > best[s] + _EPS),
                           key=lambda s: (-cand["weights"][s], s))
         for s in improved:
@@ -157,6 +161,8 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
         reasons = []
         if is_you:
             reasons.append("You (team owner)")
+        if is_member:
+            reasons.append("Already on the team")
         if improved:
             reasons.append("Adds " + ", ".join(f"{s} ({cand['weights'][s]:.2f})" for s in improved))
         if worked_mates:
@@ -166,16 +172,21 @@ def build_team(required_skills, team_size=3, current_user_id=None, include_me=Tr
         team.append({
             "userId": cand["userId"], "username": cand["username"],
             "displayName": cand["displayName"], "tier": cand["tier"],
-            "source": cand["source"], "isYou": is_you,
+            "source": cand["source"], "isYou": is_you, "isMember": is_member,
             "skills": [{k: x[k] for k in ("skill", "weight", "medals", "competitions", "source")}
                        for x in sorted(cand["skills"], key=lambda x: (-x["weight"], x["skill"]))],
             "coverageGain": round(coverage, 4), "chemistryBonus": round(bonus, 4),
             "reasons": reasons,
         })
 
-    if include_ids:
+    if current_user_id and include_me:
         me = candidates[current_user_id]
         add(me, sum(me["weights"].values()), 0.0, [], [], is_you=True)
+    for member_id in member_ids:
+        if member_id in candidates and len(team) < team_size:
+            member = candidates[member_id]
+            gain = sum(max(0.0, w - best[s]) for s, w in member["weights"].items())
+            add(member, gain, 0.0, [], [], is_member=True)
 
     while len(team) < team_size:
         team_ids = [m["userId"] for m in team]
