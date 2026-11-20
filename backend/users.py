@@ -174,3 +174,16 @@ def list_interests():
     return db.execute_query(
         "MATCH (i:Interest) RETURN i.name AS name, i.category AS category ORDER BY i.name"
     )
+
+
+def get_graph_stats():
+    """Headline numbers for the login screen (count-store lookups, so cheap)."""
+    rows = db.execute_query(
+        """
+        RETURN COUNT { (:User) } AS users,
+               COUNT { (:Team) } AS teams,
+               COUNT { (:Competition) } AS competitions,
+               COUNT { ()-[:FOLLOWS]->() } AS follows
+        """
+    )
+    return rows[0]

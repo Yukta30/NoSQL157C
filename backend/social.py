@@ -140,12 +140,17 @@ def get_connection_status(current_user_id, target_user_id):
 def get_ego_network(user_id, max_nodes=50):
     """Nodes and edges around a user (FOLLOWS + WORKED_WITH, 1 hop) for the
     network visualization page. Returns {"nodes": [...], "edges": [...]}.
+    With more than max_nodes neighbours, the strongest ties are kept
+    (teammates, then mutual follows, then one-way follows).
     """
     rows = db.execute_query(
         """
         MATCH (u:User {userId: $userId})
-        OPTIONAL MATCH (u)-[:FOLLOWS|WORKED_WITH]-(n:User)
-        WITH u, collect(DISTINCT n)[..$maxNodes] AS neighbours
+        OPTIONAL MATCH (u)-[r:FOLLOWS|WORKED_WITH]-(n:User)
+        // Over max_nodes neighbours, keep teammates first, then mutual follows.
+        WITH u, n, count(r) + 2 * count(CASE type(r) WHEN 'WORKED_WITH' THEN 1 END) AS strength
+        ORDER BY strength DESC, n.username
+        WITH u, collect(n)[..$maxNodes] AS neighbours
         WITH [u] + neighbours AS people
         UNWIND people AS p
         OPTIONAL MATCH (p)-[r:FOLLOWS|WORKED_WITH]->(q:User)
