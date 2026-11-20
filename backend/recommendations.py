@@ -32,21 +32,48 @@ WEIGHTS = {
     "worked_with": 2.0,    # flat bonus if you've been teammates before
 }
 
-# Candidate generation: anyone within reach of a shared skill/interest or two
-# hops in the social graph. Keeps the per-candidate work off the whole graph.
-_CANDIDATES_ALL = """
-CALL (me) {
-  MATCH (me)-[:HAS_SKILL|INTERESTED_IN]->()<-[:HAS_SKILL|INTERESTED_IN]-(c:User)
-  RETURN c
-  UNION
-  MATCH (me)-[:FOLLOWS|WORKED_WITH]-(:User)-[:FOLLOWS|WORKED_WITH]-(c:User)
-  RETURN c
-  UNION
+# Candidate ranking, in one pass: every person reachable through a shared
+# skill/interest or two hops in the social graph gets the same score _score()
+# computes, summed per signal. Only the top few then get the detailed evidence
+# query, so this stays fast on the full Meta Kaggle graph (30k users, where
+# common skills like "tabular" have thousands of holders).
+_RANK_CANDIDATES = """
+MATCH (me:User {userId: $userId})
+WITH me, COUNT { (:User) } AS totalUsers
+CALL (me, totalUsers) {
+  MATCH (me)-[r1:HAS_SKILL]->(s:Skill)
+  WITH me, totalUsers, r1, s, COUNT { (s)<-[:HAS_SKILL]-() } AS holders
+  MATCH (s)<-[r2:HAS_SKILL]-(c:User)
+  WHERE c <> me
+  RETURN c, $wSkills * CASE WHEN r1.weight < r2.weight THEN r1.weight ELSE r2.weight END
+            * log(1.0 + toFloat(totalUsers) / holders) / log(1.0 + totalUsers) AS points
+  UNION ALL
+  MATCH (me)-[r1:INTERESTED_IN]->(i:Interest)
+  WITH me, totalUsers, r1, i, COUNT { (i)<-[:INTERESTED_IN]-() } AS holders
+  MATCH (i)<-[r2:INTERESTED_IN]-(c:User)
+  WHERE c <> me
+  RETURN c, $wInterests * CASE WHEN r1.weight < r2.weight THEN r1.weight ELSE r2.weight END
+            * log(1.0 + toFloat(totalUsers) / holders) / log(1.0 + totalUsers) AS points
+  UNION ALL
+  MATCH (me)-[:FOLLOWS|WORKED_WITH]-(m:User)-[:FOLLOWS|WORKED_WITH]-(c:User)
+  WHERE m <> me AND c <> me AND c <> m
+  WITH DISTINCT c, m
+  RETURN c, $wMutual AS points
+  UNION ALL
   MATCH (me)-[:WORKED_WITH]-(c:User)
-  RETURN c
+  RETURN c, $wWorked AS points
 }
+WITH me, c, sum(points) AS score
+WHERE score > 0 AND NOT (me)-[:FOLLOWS]->(c)
+RETURN c.userId AS userId
+ORDER BY score DESC, COUNT { (c)<-[:FOLLOWS]-() } DESC, c.username
+LIMIT $topK
+"""
+
+_CANDIDATES_TOP = """
+UNWIND $candidateIds AS candidateId
+MATCH (c:User {userId: candidateId})
 WITH me, totalUsers, c
-WHERE c <> me AND NOT (me)-[:FOLLOWS]->(c)
 """
 
 _CANDIDATE_ONE = """
@@ -59,21 +86,23 @@ _EVIDENCE = """
 OPTIONAL MATCH (me)-[w:WORKED_WITH]-(c)
 RETURN c.userId AS userId, c.username AS username, c.displayName AS displayName,
        c.tier AS tier, c.source AS source, totalUsers,
+       COUNT { (c)<-[:FOLLOWS]-() } AS followers,
        coalesce(w.times, 0) AS workedTogetherTimes,
        COLLECT {
          MATCH (me)-[r1:HAS_SKILL]->(s:Skill)<-[r2:HAS_SKILL]-(c)
          RETURN {name: s.name, mine: r1.weight, theirs: r2.weight,
-                 holders: COUNT { (s)<-[:HAS_SKILL]-(:User) }}
+                 holders: COUNT { (s)<-[:HAS_SKILL]-() }}
        } AS sharedSkills,
        COLLECT {
          MATCH (me)-[r1:INTERESTED_IN]->(i:Interest)<-[r2:INTERESTED_IN]-(c)
          RETURN {name: i.name, mine: r1.weight, theirs: r2.weight,
-                 holders: COUNT { (i)<-[:INTERESTED_IN]-(:User) }}
+                 holders: COUNT { (i)<-[:INTERESTED_IN]-() }}
        } AS sharedInterests,
        COLLECT {
          MATCH (me)-[:FOLLOWS|WORKED_WITH]-(m:User)-[:FOLLOWS|WORKED_WITH]-(c)
          WHERE m <> me AND m <> c
-         RETURN DISTINCT m.displayName
+         WITH DISTINCT m
+         RETURN coalesce(m.displayName, m.username)
        } AS mutualConnections
 """
 
@@ -147,6 +176,7 @@ def _score(row):
         "sharedInterests": [i["name"] for i in row["sharedInterests"]],
         "mutualConnections": row["mutualConnections"],
         "workedTogetherTimes": row["workedTogetherTimes"],
+        "followers": row["followers"],
     }
 
 
@@ -188,10 +218,17 @@ def recommend_users(user_id, limit=10, fallback=True):
     for the UI). If the user has no graph signal at all and fallback=True,
     returns popular users flagged with "fallback": True.
     """
-    rows = db.execute_query(_query(_CANDIDATES_ALL), {"userId": user_id})
+    params = {"userId": user_id, "wSkills": WEIGHTS["skills"], "wInterests": WEIGHTS["interests"],
+              "wMutual": WEIGHTS["mutual"], "wWorked": WEIGHTS["worked_with"]}
+    # A few spare candidates absorb float rounding between Cypher and _score().
+    top = db.execute_query(_RANK_CANDIDATES, {**params, "topK": max(limit * 3, 30)})
+    ids = [r["userId"] for r in top]
+    rows = db.execute_query(_query(_CANDIDATES_TOP), {"userId": user_id, "candidateIds": ids}) if ids else []
     recs = [_score(r) for r in rows]
     recs = [r for r in recs if r["score"] > 0]
-    recs.sort(key=lambda r: (-r["score"], r["username"]))
+    # Ties (common for new users, whose self-declared skills all weigh 0.5)
+    # go to the better-known person.
+    recs.sort(key=lambda r: (-r["score"], -r["followers"], r["username"]))
     for r in recs:
         r["fallback"] = False
 

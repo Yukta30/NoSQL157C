@@ -14,14 +14,16 @@ _DRIVER_MAJOR = int(neo4j.__version__.split(".")[0])
 
 
 def _hide_deprecation_notices():
-    """Driver option that hides server deprecation notices (e.g. for the
-    fulltext procedure). Driver 6 renamed it; driver 5 marks the new name as a
-    preview feature, so pick by version to stay warning-free on both."""
+    """Driver option that hides server notices we expect: deprecations (e.g.
+    the fulltext procedure) and "unrecognized" ones (e.g. querying INVITED
+    before anyone has sent an invite). Driver 6 renamed the option; driver 5
+    marks the new name as a preview feature, so pick by version to stay
+    warning-free on both."""
     if _DRIVER_MAJOR >= 6:
-        from neo4j import NotificationDisabledClassification
-        return {"notifications_disabled_classifications": [NotificationDisabledClassification.DEPRECATION]}
-    from neo4j import NotificationDisabledCategory
-    return {"notifications_disabled_categories": [NotificationDisabledCategory.DEPRECATION]}
+        from neo4j import NotificationDisabledClassification as C
+        return {"notifications_disabled_classifications": [C.DEPRECATION, C.UNRECOGNIZED]}
+    from neo4j import NotificationDisabledCategory as C
+    return {"notifications_disabled_categories": [C.DEPRECATION, C.UNRECOGNIZED]}
 
 
 def _to_python(value):
@@ -61,7 +63,7 @@ class Neo4jConnection:
             **_hide_deprecation_notices(),
         )
 
-    def verify_connection(self, attempts=4, delay=1.0):
+    def verify_connection(self, attempts=6, delay=1.0):
         """Check the database is reachable.
 
         Aura sometimes fails the first routing request ("Unable to retrieve

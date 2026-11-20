@@ -1,0 +1,53 @@
+# CS 157C Project theme: burgundy and beige.
+# Warm beige page, cream cards (frontend/style.css), burgundy accents, a serif
+# for headings and Inter for everything else. Run the app from the project root
+# (`streamlit run frontend/app.py`) so Streamlit picks this file up.
+
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "light"
+
+primaryColor = "#800020"             # burgundy: buttons, links, selected chips, active tab
+backgroundColor = "#F7F1E8"          # beige page
+secondaryBackgroundColor = "#FFFDF9" # cream inputs
+textColor = "#2B1A1E"
+linkColor = "#800020"
+borderColor = "#E6D9C6"
+showWidgetBorder = true
+showSidebarBorder = true
+
+baseRadius = "12px"
+buttonRadius = "full"
+font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "'Playfair Display':https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+baseFontSize = 15
+headingFontSizes = ["38px", "24px", "20px", "17px", "15px", "13px"]
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+metricValueFontSize = "1.7rem"
+metricValueFontWeight = 700
+linkUnderline = false
+
+# Muted, earthy accents that sit well next to burgundy (badges, alerts, colored text).
+redColor = "#9B1B30"
+orangeColor = "#B5652B"
+yellowColor = "#B88A2E"
+greenColor = "#5E7D4E"
+blueColor = "#3E5C76"
+violetColor = "#7A4E7E"
+grayColor = "#8A7B6E"
+
+chartCategoricalColors = ["#800020", "#B5652B", "#5E7D4E", "#3E5C76", "#7A4E7E", "#B88A2E", "#8A7B6E"]
+
+dataframeBorderColor = "#EADFCF"
+dataframeHeaderBackgroundColor = "#F3EADC"
+
+[theme.sidebar]
+backgroundColor = "#F3EADF"
+secondaryBackgroundColor = "#FFFDF9"
+textColor = "#2B1A1E"
+borderColor = "#E6D9C6"
+primaryColor = "#800020"
+linkColor = "#800020"

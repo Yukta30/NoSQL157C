@@ -1,0 +1,290 @@
+@import url("https://fonts.googleapis.com/css2?family=Grand+Hotel&display=swap");
+
+/* Burgundy-and-beige touches on top of .streamlit/config.toml.
+   Only targets the public "st-key-" classes Streamlit adds for keyed
+   elements, so it doesn't depend on Streamlit's internal class names. */
+
+/* Cream cards on the beige page: any container whose key starts with "card". */
+[class*="st-key-card"] {
+  background: #FFFDF9;
+  border: 1px solid #EADFCF !important;
+  border-radius: 18px !important;
+  box-shadow: 0 1px 2px rgba(74, 14, 31, 0.04), 0 6px 20px rgba(74, 14, 31, 0.04);
+}
+
+/* Page headers drawn by components.page_header(): pill label + burgundy serif title. */
+.page-eyebrow {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border: 1px solid #E4C9C0;
+  background: #F6E7E0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #800020;
+}
+
+h1 {
+  color: #800020;
+}
+
+/* Card heading with a sparkle: components.form_title(). */
+.form-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #800020;
+  line-height: 1.2;
+}
+
+.form-subtitle {
+  color: #5C4A44;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+.soft-divider {
+  height: 1px;
+  background: #EADFCF;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.v-divider {
+  width: 1px;
+  height: 46px;
+  background: #E0CFC0;
+}
+
+/* Team builder: bold burgundy labels, pill-shaped fields, a big Build button. */
+[class*="st-key-team_skills_"] label p,
+.st-key-team_size label p {
+  color: #800020;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* The field's bordered box. Streamlit gives it no stable class, so this
+   follows its position; if a Streamlit update moves it, fields just keep
+   the normal rounded corners. */
+[class*="st-key-team_skills_"] > div > div > div,
+.st-key-team_size [data-testid="stNumberInputContainer"] {
+  border-radius: 999px;
+  background: #FFFDF9;
+  box-shadow: 0 1px 3px rgba(74, 14, 31, 0.06);
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+
+.st-key-team_size input {
+  text-align: center;
+  font-weight: 700;
+  color: #800020;
+}
+
+.st-key-build_team button {
+  min-height: 3.1rem;
+  padding: 0.6rem 1.8rem;
+  box-shadow: 0 6px 16px rgba(128, 0, 32, 0.22);
+}
+
+.st-key-build_team button p {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Results view (team builder): icon circles, card titles, breadcrumb, stat strips. */
+.icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #F6E7E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #800020;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: #5C4A44;
+}
+
+.breadcrumb b {
+  color: #800020;
+}
+
+.stat-strip {
+  display: flex;
+  background: #F6EEE6;
+  border-radius: 14px;
+  padding: 0.7rem 0.25rem;
+}
+
+.stat-strip > div {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-strip > div + div {
+  border-left: 1px solid #E6D9C6;
+}
+
+.stat-strip .v {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #2B1A1E;
+}
+
+.stat-strip .v.gain {
+  color: #3F6B34;
+}
+
+.stat-strip .l {
+  font-size: 0.8rem;
+  color: #6E5D55;
+}
+
+/* Inbox count bubble in the sidebar (the number is set in app.py). */
+a[href$="/inbox"]::after {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #800020;
+  color: #FFFDF9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Network page: a dark wine panel around the graph (frontend/app_pages/network.py). */
+.st-key-network_panel {
+  background: #1E0B10;
+  border-radius: 24px;
+  padding: 22px 20px 12px;
+  box-shadow: 0 12px 32px rgba(30, 11, 16, 0.25);
+}
+
+/* ---------- Login screen (frontend/login.py): burgundy and beige ---------- */
+.st-key-auth_page {
+  padding-top: 2.5rem;
+}
+
+.st-key-auth_card,
+.st-key-auth_switch {
+  background: #FFFDF9;
+  border: 1px solid #E4D6C3;
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(74, 14, 31, 0.06);
+}
+
+.st-key-auth_card {
+  padding: 2rem 2.25rem 1.5rem;
+}
+
+.st-key-auth_switch {
+  padding: 0.6rem 1rem;
+  margin-top: 0.6rem;
+}
+
+/* Beige text fields with a burgundy focus ring. */
+.st-key-auth_card input {
+  background: #F8F2E9;
+  color: #3B1A22;
+}
+
+.st-key-auth_card input:focus {
+  box-shadow: 0 0 0 2px rgba(128, 0, 32, 0.25);
+}
+
+/* Burgundy primary buttons and links on this screen only. */
+.st-key-login_submit button,
+.st-key-signup_submit button {
+  background: #800020;
+  border-color: #800020;
+  color: #FFFDF9;
+}
+
+.st-key-login_submit button:hover,
+.st-key-signup_submit button:hover {
+  background: #6A001A;
+  border-color: #6A001A;
+  color: #FFFDF9;
+}
+
+.st-key-login_submit button *,
+.st-key-signup_submit button * {
+  color: #FFFDF9;
+}
+
+.st-key-auth_card [class*="st-key-login_k"] button,
+.st-key-auth_card [class*="st-key-login_u"] button,
+.st-key-auth_switch button,
+.st-key-auth_switch button * {
+  color: #800020;
+}
+
+.auth-wordmark {
+  font-family: "Grand Hotel", cursive;
+  font-size: 3.1rem;
+  line-height: 1.1;
+  text-align: center;
+  background: linear-gradient(45deg, #4A0E1F, #800020 40%, #A8505F 70%, #B08D57);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding: 0.2rem 0;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #8A7563;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #A89480;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #E4D6C3;
+}
+
+.auth-footer {
+  text-align: center;
+  color: #A89480;
+  font-size: 0.8rem;
+  margin-top: 2rem;
+}
