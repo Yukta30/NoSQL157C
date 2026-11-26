@@ -99,6 +99,47 @@ def ego_network(user_id, max_nodes=50):
     return social.get_ego_network(user_id, max_nodes=max_nodes)
 
 
+@_cached
+def following_ids(user_id):
+    """Ids this user follows, for drawing many Follow buttons without a query each."""
+    return {row["user"]["userId"] for row in social.get_following(user_id)}
+
+
+@_cached
+def two_hop_recommendations(user_id, limit=25):
+    return social.get_two_hop_recommendations(user_id, limit=limit)
+
+
+@_cached
+def mutual_following(user_a, user_b):
+    return social.get_mutual_following(user_a, user_b)
+
+
+@_cached
+def popular_users(limit=25):
+    return social.get_popular_users(limit=limit)
+
+
+@_cached
+def degrees_of_separation(from_username, to_username, max_hops=4):
+    return social.degrees_of_separation(from_username, to_username, max_hops=max_hops)
+
+
+@_cached
+def count_users():
+    return users.count_users()
+
+
+@_cached
+def all_users(skip, limit):
+    return users.list_all_users(skip, limit)
+
+
+@_cached
+def user_page_of(username, page_size):
+    return users.user_page_of(username, page_size)
+
+
 def follow(me, other):
     created = social.follow_user(me, other)
     st.cache_data.clear()

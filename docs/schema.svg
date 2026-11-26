@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" width="1400" height="1000" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5C1A2B"/>
+    </marker>
+    <marker id="arrowApp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#B5652B"/>
+    </marker>
+    <style>
+      .box { fill: #FFFDF9; stroke: #800020; stroke-width: 2; }
+      .boxApp { fill: #FFFDF9; stroke: #B5652B; stroke-width: 2; stroke-dasharray: 6 4; }
+      .head { fill: #800020; }
+      .headApp { fill: #B5652B; }
+      .title { fill: #FFFDF9; font-size: 20px; font-weight: 700; }
+      .prop { fill: #2B1A1E; font-size: 13px; }
+      .key { font-weight: 700; }
+      .note { fill: #8A7B6E; font-size: 12px; font-style: italic; }
+      .edge { stroke: #5C1A2B; stroke-width: 2; fill: none; }
+      .edgeDerived { stroke: #7A4E7E; stroke-width: 2; fill: none; stroke-dasharray: 8 5; }
+      .edgeApp { stroke: #B5652B; stroke-width: 2; fill: none; stroke-dasharray: 4 4; }
+      .rel { fill: #5C1A2B; font-size: 14px; font-weight: 700; }
+      .relDerived { fill: #7A4E7E; font-size: 14px; font-weight: 700; }
+      .relApp { fill: #B5652B; font-size: 14px; font-weight: 700; }
+      .relProp { fill: #5C4A44; font-size: 12px; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="1000" fill="#F7F1E8"/>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#800020">CS 157C Project: property graph schema (Neo4j)</text>
+
+  <!-- ===================== edges (drawn first) ===================== -->
+  <!-- FOLLOWS self loop (directed) -->
+  <path class="edge" d="M100 300 C100 215, 200 215, 200 296" marker-end="url(#arrow)"/>
+  <text class="rel" x="62" y="200">FOLLOWS</text>
+  <text class="relProp" x="62" y="216">{since: Date}</text>
+
+  <!-- WORKED_WITH self loop (undirected, derived) -->
+  <path class="edgeDerived" d="M250 300 C250 215, 350 215, 350 300"/>
+  <text class="relDerived" x="226" y="186">WORKED_WITH</text>
+  <text class="relProp" x="226" y="202">undirected, derived {times}</text>
+
+  <!-- MEMBER_OF -->
+  <path class="edge" d="M380 330 L518 168" marker-end="url(#arrow)"/>
+  <text class="rel" x="372" y="232" transform="rotate(-50 372 232)">MEMBER_OF</text>
+
+  <!-- PARTICIPATED_IN -->
+  <path class="edge" d="M800 150 L998 150" marker-end="url(#arrow)"/>
+  <text class="rel" x="826" y="140">PARTICIPATED_IN</text>
+
+  <!-- USES_SKILL -->
+  <path class="edge" d="M1110 262 L1110 398" marker-end="url(#arrow)"/>
+  <text class="rel" x="1018" y="335">USES_SKILL</text>
+
+  <!-- ABOUT -->
+  <path class="edge" d="M1320 200 C1385 200, 1385 700, 1322 700" marker-end="url(#arrow)"/>
+  <text class="rel" x="1330" y="455" transform="rotate(90 1330 455)">ABOUT</text>
+
+  <!-- HAS_SKILL -->
+  <path class="edge" d="M380 430 L998 452" marker-end="url(#arrow)"/>
+  <text class="rel" x="560" y="420">HAS_SKILL</text>
+  <text class="relProp" x="560" y="436">{weight, competitions, medals, source}</text>
+
+  <!-- INTERESTED_IN -->
+  <path class="edge" d="M380 520 L998 690" marker-end="url(#arrow)"/>
+  <text class="rel" x="575" y="548" transform="rotate(15 575 548)">INTERESTED_IN</text>
+  <text class="relProp" x="571" y="564" transform="rotate(15 571 564)">{weight, competitions, source}</text>
+
+  <!-- App: OWNS / JOINED / INVITED (User down to Project) -->
+  <path class="edgeApp" d="M120 640 L120 788" marker-end="url(#arrowApp)"/>
+  <path class="edgeApp" d="M220 640 L220 788" marker-end="url(#arrowApp)"/>
+  <path class="edgeApp" d="M320 640 L320 788" marker-end="url(#arrowApp)"/>
+  <text class="relApp" x="128" y="700">OWNS</text>
+  <text class="relApp" x="228" y="700">JOINED</text>
+  <text class="relProp" x="228" y="716">{role,</text>
+  <text class="relProp" x="228" y="730">since}</text>
+  <text class="relApp" x="328" y="700">INVITED</text>
+  <text class="relProp" x="328" y="716">{status, invitedBy,</text>
+  <text class="relProp" x="328" y="730">message, at, respondedAt}</text>
+
+  <!-- App: NEEDS -->
+  <path class="edgeApp" d="M380 860 C700 860, 900 600, 1060 522" marker-end="url(#arrowApp)"/>
+  <text class="relApp" x="660" y="770">NEEDS</text>
+
+  <!-- ===================== nodes ===================== -->
+  <!-- User -->
+  <rect class="box" x="60" y="300" width="320" height="340" rx="14"/>
+  <path class="head" d="M60 314 a14 14 0 0 1 14 -14 h292 a14 14 0 0 1 14 14 v28 h-320 z"/>
+  <text class="title" x="78" y="330">:User</text>
+  <text class="prop" x="78" y="366"><tspan class="key">userId</tspan> (unique) "k…" Kaggle / "u…" app</text>
+  <text class="prop" x="78" y="388"><tspan class="key">username</tspan> (unique)</text>
+  <text class="prop" x="78" y="410">displayName (name)</text>
+  <text class="prop" x="78" y="432">tier, compTier, country</text>
+  <text class="prop" x="78" y="454">registerDate: Date</text>
+  <text class="prop" x="78" y="476">golds, silvers, bronzes</text>
+  <text class="prop" x="78" y="498">source: "kaggle" | "app"</text>
+  <text class="prop" x="78" y="526" fill="#B5652B">App accounts only:</text>
+  <text class="prop" x="78" y="548">email (unique), bio</text>
+  <text class="prop" x="78" y="570">passwordHash (salted scrypt,</text>
+  <text class="prop" x="78" y="590">never returned or shown)</text>
+  <text class="note" x="78" y="622">~29.8k nodes</text>
+
+  <!-- Team -->
+  <rect class="box" x="520" y="60" width="280" height="190" rx="14"/>
+  <path class="head" d="M520 74 a14 14 0 0 1 14 -14 h252 a14 14 0 0 1 14 14 v28 h-280 z"/>
+  <text class="title" x="538" y="90">:Team</text>
+  <text class="prop" x="538" y="126"><tspan class="key">teamId</tspan> (unique)</text>
+  <text class="prop" x="538" y="148">teamName, medal</text>
+  <text class="prop" x="538" y="170">privateRank, rankPct</text>
+  <text class="prop" x="538" y="192">teamSize</text>
+  <text class="note" x="538" y="232">15,392 medal teams</text>
+
+  <!-- Competition -->
+  <rect class="box" x="1000" y="60" width="320" height="200" rx="14"/>
+  <path class="head" d="M1000 74 a14 14 0 0 1 14 -14 h292 a14 14 0 0 1 14 14 v28 h-320 z"/>
+  <text class="title" x="1018" y="90">:Competition</text>
+  <text class="prop" x="1018" y="126"><tspan class="key">competitionId</tspan> (unique)</text>
+  <text class="prop" x="1018" y="148">slug, title, segment</text>
+  <text class="prop" x="1018" y="170">year, maxTeamSize, totalTeams</text>
+  <text class="note" x="1018" y="242">317 competitions</text>
+
+  <!-- Skill -->
+  <rect class="box" x="1000" y="400" width="320" height="120" rx="14"/>
+  <path class="head" d="M1000 414 a14 14 0 0 1 14 -14 h292 a14 14 0 0 1 14 14 v28 h-320 z"/>
+  <text class="title" x="1018" y="430">:Skill</text>
+  <text class="prop" x="1018" y="466"><tspan class="key">name</tspan> (unique), category, tagId</text>
+  <text class="note" x="1018" y="500">48 Kaggle tags (data type / task / …)</text>
+
+  <!-- Interest -->
+  <rect class="box" x="1000" y="640" width="320" height="120" rx="14"/>
+  <path class="head" d="M1000 654 a14 14 0 0 1 14 -14 h292 a14 14 0 0 1 14 14 v28 h-320 z"/>
+  <text class="title" x="1018" y="670">:Interest</text>
+  <text class="prop" x="1018" y="706"><tspan class="key">name</tspan> (unique), category, tagId</text>
+  <text class="note" x="1018" y="740">71 Kaggle "subject" tags</text>
+
+  <!-- Project (app-created) -->
+  <rect class="boxApp" x="60" y="790" width="320" height="180" rx="14"/>
+  <path class="headApp" d="M60 804 a14 14 0 0 1 14 -14 h292 a14 14 0 0 1 14 14 v28 h-320 z"/>
+  <text class="title" x="78" y="820">:Project</text>
+  <text class="prop" x="78" y="856"><tspan class="key">projectId</tspan> (unique)</text>
+  <text class="prop" x="78" y="878">title, description, teamSize</text>
+  <text class="prop" x="78" y="900">status: open | full | closed</text>
+  <text class="prop" x="78" y="922">createdAt: DateTime</text>
+  <text class="note" x="78" y="954">created in the app</text>
+
+  <!-- ===================== legend ===================== -->
+  <rect x="850" y="890" width="520" height="80" rx="10" fill="#FFFDF9" stroke="#E6D9C6"/>
+  <line class="edge" x1="870" y1="912" x2="920" y2="912"/>
+  <text class="prop" x="930" y="916">Loaded from the Meta Kaggle dataset</text>
+  <line class="edgeDerived" x1="870" y1="934" x2="920" y2="934"/>
+  <text class="prop" x="930" y="938">Derived after loading (shared teams)</text>
+  <line class="edgeApp" x1="870" y1="956" x2="920" y2="956"/>
+  <text class="prop" x="930" y="960">Created by the application (registration, projects)</text>
+</svg>

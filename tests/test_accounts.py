@@ -54,6 +54,7 @@ def vocab():
 
 def register(name="jane", **kw):
     kw.setdefault("display_name", "Jane Doe")
+    kw.setdefault("email", f"{name}@example.com")
     kw.setdefault("password", PASSWORD)
     return accounts.register_user(PREFIX + name, **kw)
 
@@ -102,30 +103,46 @@ def test_imported_users_cannot_log_in_with_a_password():
     ({"name": "x"}, "Username must be"),                       # too short
     ({"name": "Bad Name!"}, "Username must be"),
     ({"password": "short"}, "at least 8"),
-    ({"display_name": "   "}, "Display name"),
+    ({"display_name": "   "}, "Name can't be empty"),
+    ({"email": ""}, "valid email"),
+    ({"email": "not-an-email"}, "valid email"),
+    ({"bio": "x" * 301}, "Bio must be"),
     ({"skills": ["not-a-real-skill"]}, "not-a-real-skill"),
 ])
 def test_register_rejects_bad_input(kw, message):
     name = kw.pop("name", "jane")
     with pytest.raises(ValueError, match=message):
         accounts.register_user(name if name in ("x", "Bad Name!") else PREFIX + name,
-                               **{"display_name": "Jane", "password": PASSWORD, **kw})
+                               **{"display_name": "Jane", "email": "jane@example.com", "password": PASSWORD,
+                                  **kw})
 
 
 def test_username_must_be_unique():
     register()
     with pytest.raises(ValueError, match="already taken"):
-        register(display_name="Someone else")
+        register(display_name="Someone else", email="someone@example.com")
     taken = db.execute_query("MATCH (u:User) WHERE u.source <> 'app' RETURN u.username AS n LIMIT 1")
     if taken:  # imported usernames are taken too
         with pytest.raises(ValueError, match="already taken"):
-            accounts.register_user(taken[0]["n"], "X", PASSWORD)
+            accounts.register_user(taken[0]["n"], "X", "x-unique@example.com", PASSWORD)
+
+
+def test_email_and_bio_are_stored_and_email_is_unique():
+    user = register(email="  Jane@Example.COM ", bio="  Kaggle NLP fan  ")
+    assert user["email"] == "jane@example.com" and user["bio"] == "Kaggle NLP fan"
+    with pytest.raises(ValueError, match="email is already used"):
+        register("other", email="JANE@example.com")
+    assert register("nobio")["bio"] is None
 
 
 def test_update_profile_replaces_self_declared_tags(vocab):
     skills, interests = vocab
     user = register(skills=skills[:2], interests=interests[:2])
-    accounts.update_profile(user["userId"], "Jane D.", country="", skills=[skills[2]], interests=[])
+    accounts.update_profile(user["userId"], "Jane D.", "jane.d@example.com", bio="New bio", country="",
+                            skills=[skills[2]], interests=[])
+    after = users.get_user(user["userId"])
+    assert after["email"] == "jane.d@example.com" and after["bio"] == "New bio"
+    assert after["username"] == PREFIX + "jane"  # username never changes
     assert users.get_user(user["userId"])["displayName"] == "Jane D."
     assert users.get_user(user["userId"])["country"] is None
     assert [s["skill"] for s in users.get_user_skills(user["userId"])] == [skills[2]]
@@ -136,7 +153,7 @@ def test_only_app_accounts_are_editable():
     some = db.execute_query("MATCH (u:User) WHERE u.source <> 'app' RETURN u.userId AS id LIMIT 1")
     if some:
         with pytest.raises(ValueError, match="Only accounts created in the app"):
-            accounts.update_profile(some[0]["id"], "Hacker")
+            accounts.update_profile(some[0]["id"], "Hacker", "hacker@example.com")
 
 
 def test_new_user_gets_recommendations(vocab):
@@ -161,6 +178,8 @@ def test_signup_form_creates_account_and_logs_in(vocab):
     at.button(key="switch_to_signup").click().run()
     at.text_input(key="signup_username").input(PREFIX + "form")
     at.text_input(key="signup_display").input("Form User")
+    at.text_input(key="signup_email").input("form@example.com")
+    at.text_area(key="signup_bio").input("Hello from the form")
     at.text_input(key="signup_password").input(PASSWORD)
     at.text_input(key="signup_confirm").input(PASSWORD)
     at.button(key="signup_submit").click().run()
@@ -168,6 +187,7 @@ def test_signup_form_creates_account_and_logs_in(vocab):
     assert not at.error, [e.value for e in at.error]
     created = users.get_user_by_username(PREFIX + "form")
     assert created and at.session_state["me"] == created["userId"]
+    assert created["email"] == "form@example.com" and created["bio"] == "Hello from the form"
     assert at.title[0].value == "Hi, Form"
 
 
@@ -177,6 +197,7 @@ def test_signup_form_shows_errors():
     at.button(key="switch_to_signup").click().run()
     at.text_input(key="signup_username").input(PREFIX + "jane")
     at.text_input(key="signup_display").input("Jane")
+    at.text_input(key="signup_email").input("jane2@example.com")
     at.text_input(key="signup_password").input(PASSWORD)
     at.text_input(key="signup_confirm").input("different-pass")
     at.button(key="signup_submit").click().run()
@@ -218,3 +239,19 @@ def test_own_profile_has_edit_button_only_for_app_accounts():
     at.run()
     assert not at.exception
     assert at.button(key="profile_edit")
+
+
+def test_profile_shows_email_only_to_its_owner():
+    user = register(bio="Hello there")
+    other = register("other")
+    for viewer, should_see in ((user["userId"], True), (other["userId"], False)):
+        at = AppTest.from_file(APP, default_timeout=60)
+        at.session_state["me"] = viewer
+        at.run()
+        at.switch_page("app_pages/profile.py")
+        at.query_params["user"] = user["userId"]
+        at.run()
+        text = " ".join(m.value for m in at.markdown)
+        assert ("jane@example.com" in text) is should_see
+        assert "Hello there" in text
+        assert "password" not in text.lower() or "scrypt" not in text

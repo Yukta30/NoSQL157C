@@ -19,7 +19,9 @@ USER_FIELDS = """
     golds: coalesce(u.golds, 0),
     silvers: coalesce(u.silvers, 0),
     bronzes: coalesce(u.bronzes, 0),
-    source: u.source
+    source: u.source,
+    email: u.email,
+    bio: u.bio
 """
 
 # Characters with special meaning in Lucene query syntax (used by fulltext indexes).
@@ -33,7 +35,7 @@ def _fulltext_query(search_term):
 
 
 def search_users(search_term, limit=20):
-    """Search users by username or display name (prefix match per word).
+    """UC-11: search users by username or display name (prefix match per word).
 
     Uses the `user_search` fulltext index from database/schema.cypher.
     """
@@ -187,3 +189,33 @@ def get_graph_stats():
         """
     )
     return rows[0]
+
+
+def count_users():
+    return db.execute_query("RETURN COUNT { (:User) } AS n")[0]["n"]
+
+
+def list_all_users(skip=0, limit=25):
+    """UC-10: every user (including you and people you follow), by username, one page at a time."""
+    return db.execute_query(
+        """
+        MATCH (u:User)
+        WITH u ORDER BY toLower(u.username)
+        SKIP $skip LIMIT $limit
+        RETURN u.userId AS userId, u.username AS username, u.displayName AS displayName,
+               u.tier AS tier, u.source AS source, COUNT { (u)<-[:FOLLOWS]-() } AS followers
+        """,
+        {"skip": int(skip), "limit": int(limit)},
+    )
+
+
+def user_page_of(username, page_size=25):
+    """Which page of list_all_users() a username is on (0-based), or None."""
+    rows = db.execute_query(
+        """
+        MATCH (me:User {username: $username})
+        RETURN COUNT { MATCH (u:User) WHERE toLower(u.username) < toLower(me.username) } AS before
+        """,
+        {"username": username},
+    )
+    return rows[0]["before"] // page_size if rows else None

@@ -53,7 +53,8 @@ def skills():
 
 
 def user(name, skill_names=()):
-    return accounts.register_user(PREFIX + name, name.title(), "password-123", skills=list(skill_names))["userId"]
+    return accounts.register_user(PREFIX + name, name.title(), f"{name}@example.com", "password-123",
+                                  skills=list(skill_names))["userId"]
 
 
 @pytest.fixture

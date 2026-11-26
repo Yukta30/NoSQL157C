@@ -166,17 +166,22 @@ def signup_card():
     with st.container(key="auth_card", gap="small"):
         wordmark("Sign up to find teammates, follow Kagglers and build your dream team.")
         with st.form("signup_form", border=False):
-            display = st.text_input("Full name", key="signup_display", placeholder="Full name",
+            display = st.text_input("Name", key="signup_display", placeholder="Name",
                                     label_visibility="collapsed", autocomplete="name")
             username = st.text_input("Username", key="signup_username", placeholder="Username",
                                      label_visibility="collapsed", autocomplete="username",
-                                     help="3-30 characters: lowercase letters, numbers, '.', '_' or '-'")
+                                     help="3-30 characters: lowercase letters, numbers, '.', '_' or '-'. "
+                                          "It can't be changed later.")
+            email = st.text_input("Email", key="signup_email", placeholder="Email",
+                                  label_visibility="collapsed", autocomplete="email")
             password = st.text_input("Password", type="password", key="signup_password",
                                      placeholder="Password (8+ characters)", label_visibility="collapsed",
                                      autocomplete="new-password")
             confirm = st.text_input("Confirm password", type="password", key="signup_confirm",
                                     placeholder="Confirm password", label_visibility="collapsed",
                                     autocomplete="new-password")
+            bio = st.text_area("Bio", key="signup_bio", placeholder="Bio (optional): a line about you",
+                               label_visibility="collapsed", max_chars=300, height=80)
             country = st.text_input("Country", key="signup_country", placeholder="Country (optional)",
                                     label_visibility="collapsed", autocomplete="country-name")
             with st.expander("Add your skills and interests (optional)", icon=":material/auto_awesome:"):
@@ -191,8 +196,9 @@ def signup_card():
                 st.error("The passwords don't match.", icon=":material/lock:")
             else:
                 try:
-                    user = data.register_user(username=username, display_name=display, password=password,
-                                              skills=skills, interests=interests, country=country)
+                    user = data.register_user(username=username, display_name=display, email=email,
+                                              password=password, bio=bio, skills=skills,
+                                              interests=interests, country=country)
                 except ValueError as e:
                     st.error(str(e), icon=":material/error:")
                 else:

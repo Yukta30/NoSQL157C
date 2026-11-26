@@ -3,6 +3,7 @@
 Registered users follow docs/csv_contract.md ("App-registered users"):
   userId     "u" + UUID4 hex
   source     "app"
+  email      required, unique (lowercase); bio optional
   skills / interests the user picks from the vocabulary, written as
   HAS_SKILL / INTERESTED_IN with weight 0.5, competitions 0, source "self".
 
@@ -24,6 +25,8 @@ from backend import users
 from backend.db import db
 
 USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3,30}$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+MAX_BIO = 300
 MIN_PASSWORD_LENGTH = 8
 SELF_WEIGHT = 0.5
 
@@ -75,11 +78,24 @@ def _check_vocabulary(skills, interests):
         raise ValueError("Not in the skill/interest list: " + ", ".join(unknown))
 
 
-def _check_profile(display_name, skills, interests):
+def normalize_email(email):
+    return (email or "").strip().lower()
+
+
+def _check_profile(display_name, email, bio, skills, interests, user_id=None):
     if not (display_name or "").strip():
-        raise ValueError("Display name can't be empty.")
+        raise ValueError("Name can't be empty.")
     if len(display_name.strip()) > 60:
-        raise ValueError("Display name must be 60 characters or fewer.")
+        raise ValueError("Name must be 60 characters or fewer.")
+    if not EMAIL_RE.match(email):
+        raise ValueError("Enter a valid email address, like name@example.com.")
+    if len(bio or "") > MAX_BIO:
+        raise ValueError(f"Bio must be {MAX_BIO} characters or fewer.")
+    taken = db.execute_query(
+        "MATCH (u:User {email: $email}) WHERE u.userId <> $userId RETURN u.userId LIMIT 1",
+        {"email": email, "userId": user_id or ""})
+    if taken:
+        raise ValueError("That email is already used by another account.")
     _check_vocabulary(skills, interests)
 
 
@@ -107,19 +123,21 @@ RETURN u.userId AS userId
 """
 
 
-def register_user(username, display_name, password, skills=(), interests=(), country=None):
-    """Create an app account and return the new user (users.get_user shape).
+def register_user(username, display_name, email, password, bio=None, skills=(), interests=(), country=None):
+    """UC-1: create an app account and return the new user (users.get_user shape).
 
-    Raises ValueError with a message for the UI when something is invalid
-    (bad or taken username, short password, unknown skill, ...).
+    name (display_name), username, email and password are required; bio is
+    optional. Raises ValueError with a message for the UI when something is
+    invalid (bad or taken username/email, short password, unknown skill, ...).
     """
     username = normalize_username(username)
     if not USERNAME_RE.match(username):
         raise ValueError("Username must be 3-30 characters: lowercase letters, numbers, '.', '_' or '-'.")
     if len(password or "") < MIN_PASSWORD_LENGTH:
         raise ValueError(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
+    email = normalize_email(email)
     skills, interests = _clean_tags(skills), _clean_tags(interests)
-    _check_profile(display_name, skills, interests)
+    _check_profile(display_name, email, bio, skills, interests)
     if users.get_user_by_username(username):
         raise ValueError(f"The username @{username} is already taken.")
 
@@ -128,21 +146,23 @@ def register_user(username, display_name, password, skills=(), interests=(), cou
         db.execute_query(
             """
             CREATE (u:User {userId: $userId, username: $username, displayName: $displayName,
+                            email: $email, bio: $bio,
                             country: $country, registerDate: date(), golds: 0, silvers: 0,
                             bronzes: 0, source: 'app', passwordHash: $passwordHash})
             """ + _SET_TAGS,
             {"userId": user_id, "username": username, "displayName": display_name.strip(),
+             "email": email, "bio": (bio or "").strip() or None,
              "country": (country or "").strip() or None, "passwordHash": hash_password(password),
              "skills": skills, "interests": interests, "weight": SELF_WEIGHT},
             write=True,
         )
-    except ConstraintError:  # someone took the username in the meantime
-        raise ValueError(f"The username @{username} is already taken.") from None
+    except ConstraintError:  # someone took the username or email in the meantime
+        raise ValueError(f"The username @{username} or that email is already taken.") from None
     return users.get_user(user_id)
 
 
 def authenticate(username, password):
-    """The user if the username/password match an app account, else None."""
+    """UC-2: the user if the username/password match an app account, else None."""
     rows = db.execute_query(
         "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.passwordHash AS passwordHash",
         {"username": normalize_username(username)},
@@ -161,19 +181,22 @@ def can_edit_profile(user):
     return bool(user) and user.get("source") == "app"
 
 
-def update_profile(user_id, display_name, country=None, skills=(), interests=()):
-    """Replace an app user's display name, country and self-declared skills/interests."""
+def update_profile(user_id, display_name, email, bio=None, country=None, skills=(), interests=()):
+    """UC-4: update an app user's name, email and bio (plus country and
+    self-declared skills/interests). The username never changes."""
     user = users.get_user(user_id)
     if not can_edit_profile(user):
         raise ValueError("Only accounts created in the app can be edited.")
+    email = normalize_email(email)
     skills, interests = _clean_tags(skills), _clean_tags(interests)
-    _check_profile(display_name, skills, interests)
+    _check_profile(display_name, email, bio, skills, interests, user_id=user_id)
     db.execute_query(
         """
         MATCH (u:User {userId: $userId})
-        SET u.displayName = $displayName, u.country = $country
+        SET u.displayName = $displayName, u.email = $email, u.bio = $bio, u.country = $country
         """ + _SET_TAGS,
         {"userId": user_id, "displayName": display_name.strip(),
+         "email": email, "bio": (bio or "").strip() or None,
          "country": (country or "").strip() or None,
          "skills": skills, "interests": interests, "weight": SELF_WEIGHT},
         write=True,
