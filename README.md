@@ -1,4 +1,4 @@
-# CS 157C — Neo4j Teammate Matcher
+# TeaMatcha: CS 157C Neo4j Teammate Matcher
 
 A Neo4j-powered social network for skill-based discovery and teammate recommendations, seeded from [Meta Kaggle](https://www.kaggle.com/datasets/kaggle/meta-kaggle).
 

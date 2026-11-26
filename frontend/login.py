@@ -114,7 +114,7 @@ def hero():
 # ---------- auth card ----------
 
 def wordmark(subtitle):
-    st.html(f"<div class='auth-wordmark'>CS 157C Project</div>"
+    st.html(f"<div class='auth-wordmark'>TeaMatcha</div>"
             f"<div class='auth-subtitle'>{escape(subtitle)}</div>")
 
 
@@ -202,7 +202,7 @@ def signup_card():
                 except ValueError as e:
                     st.error(str(e), icon=":material/error:")
                 else:
-                    _welcome(user, f"Welcome to CS 157C Project, {display_name(user).split()[0]}!")
+                    _welcome(user, f"Welcome to TeaMatcha, {display_name(user).split()[0]}!")
 
     with st.container(key="auth_switch", horizontal=True, horizontal_alignment="center"):
         st.button("Have an account? **Log in**", key="switch_to_login", type="tertiary",

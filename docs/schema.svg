@@ -26,7 +26,7 @@
   </defs>
 
   <rect width="1400" height="1000" fill="#F7F1E8"/>
-  <text x="40" y="44" font-size="26" font-weight="700" fill="#800020">CS 157C Project: property graph schema (Neo4j)</text>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#800020">TeaMatcha (CS 157C Project): property graph schema (Neo4j)</text>
 
   <!-- ===================== edges (drawn first) ===================== -->
   <!-- FOLLOWS self loop (directed) -->
