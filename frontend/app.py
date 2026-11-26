@@ -1,4 +1,4 @@
-"""CS 157C Project frontend. Run from the project root:
+"""TeaMatcha (CS 157C Project) frontend. Run from the project root:
 
     streamlit run frontend/app.py
 
@@ -26,7 +26,7 @@ WIDE_PAGES = {"team_builder"}  # pages designed for the full width
 def page_config(layout):
     """Set the page config exactly once per run: Streamlit doesn't reliably apply a
     second layout change in the same run (e.g. after st.rerun())."""
-    st.set_page_config(page_title="CS 157C Project", page_icon=str(ASSETS / "icon.svg"), layout=layout)
+    st.set_page_config(page_title="TeaMatcha", page_icon=str(ASSETS / "icon.svg"), layout=layout)
 
 
 def inject_style():

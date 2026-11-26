@@ -74,7 +74,7 @@ def require_backend():
 
 
 def _fail(title, help_md, retry=False):
-    st.title("CS 157C Project")
+    st.title("TeaMatcha")
     st.error(f"**{title}**")
     st.markdown(help_md)
     if retry:

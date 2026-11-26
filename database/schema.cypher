@@ -1,5 +1,5 @@
 // =====================================================================
-// CS 157C Project - Neo4j schema (Neo4j 5.x syntax, works on AuraDB)
+// TeaMatcha (CS 157C Project) - Neo4j schema (Neo4j 5.x syntax, works on AuraDB)
 // Run once on an empty database BEFORE loading any CSVs.
 // Contract: docs/csv_contract.md
 // =====================================================================
