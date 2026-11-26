@@ -7,14 +7,21 @@ from frontend.session import display_name, get_me
 
 @st.dialog("Edit profile", width="large")
 def edit_profile(profile):
-    """Change display name, country and self-declared skills/interests (app accounts only)."""
+    """UC-4: change name, email and bio (plus country and self-declared skills/interests).
+    The username can't be changed. App accounts only."""
     my_skills = [s["skill"] for s in profile["skills"]]
     my_interests = [i["interest"] for i in profile["interests"]]
     with st.form("edit_profile_form", border=False):
+        st.text_input("Username", value=f"@{profile['username']}", disabled=True, key="edit_username",
+                      help="Usernames can't be changed after registration.")
         left, right = st.columns(2)
-        display = left.text_input("Display name", value=profile.get("displayName") or "", key="edit_display")
-        country = right.text_input("Country", value=profile.get("country") or "", key="edit_country",
-                                   icon=":material/public:")
+        display = left.text_input("Name", value=profile.get("displayName") or "", key="edit_display")
+        email = right.text_input("Email", value=profile.get("email") or "", key="edit_email",
+                                 icon=":material/mail:")
+        bio = st.text_area("Bio", value=profile.get("bio") or "", key="edit_bio", max_chars=300, height=80,
+                           placeholder="A line about you (optional)")
+        country = st.text_input("Country", value=profile.get("country") or "", key="edit_country",
+                                icon=":material/public:")
         st.markdown("**Skills**")
         skills = components.tag_picker(data.list_skills(), "edit_skills", default=my_skills)
         with st.expander("Interests", icon=":material/interests:", expanded=bool(my_interests)):
@@ -22,8 +29,8 @@ def edit_profile(profile):
         saved = st.form_submit_button("Save changes", key="edit_save", type="primary", icon=":material/check:")
     if saved:
         try:
-            data.update_profile(profile["userId"], display_name=display, country=country,
-                                skills=skills, interests=interests)
+            data.update_profile(profile["userId"], display_name=display, email=email, bio=bio,
+                                country=country, skills=skills, interests=interests)
         except ValueError as e:
             st.error(str(e), icon=":material/error:")
             return
@@ -69,6 +76,10 @@ with components.card("profile_header"):
         if profile.get("registerDate"):
             details.append(f"joined {profile['registerDate'][:4]}")
         st.markdown(":gray[" + " · ".join(details) + "]")
+        if is_me and profile.get("email"):  # UC-3: email is only shown to its owner
+            st.markdown(f":material/mail: {profile['email']}")
+        if profile.get("bio"):
+            st.markdown(f"_{profile['bio']}_")
         components.user_badges(profile)
     with actions:
         components.follow_button(me, profile, key="profile_follow")

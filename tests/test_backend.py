@@ -181,7 +181,8 @@ def test_follow_unfollow_roundtrip():
     assert not social.is_following(LEE, ALICE)
     try:
         assert social.follow_user(LEE, ALICE) is True
-        assert social.follow_user(LEE, ALICE) is False          # idempotent
+        with pytest.raises(ValueError, match="already follow"):  # UC-5: no second relationship
+            social.follow_user(LEE, ALICE)
         assert social.is_following(LEE, ALICE)
         rows = social.get_following(LEE)
         assert _names(rows) == ["alicechen"] and len(rows[0]["since"]) == 10
@@ -192,7 +193,8 @@ def test_follow_unfollow_roundtrip():
 
 
 def test_follow_existing_keeps_since():
-    assert social.follow_user(SAM, ALICE) is False
+    with pytest.raises(ValueError, match="already follow"):
+        social.follow_user(SAM, ALICE)
     assert social.get_following(SAM)[0]["since"] == "2026-11-02"
 
 

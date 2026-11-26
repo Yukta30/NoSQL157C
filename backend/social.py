@@ -14,33 +14,38 @@ def _summary(var):
 
 
 def follow_user(current_user_id, target_user_id):
-    """Make current user follow target. Idempotent.
+    """UC-5: make the current user follow the target.
 
-    Returns True if a new follow was created, False if it already existed.
-    Raises ValueError for self-follows or unknown users.
+    Creates (current)-[:FOLLOWS {since: today}]->(target) and returns True.
+    Raises ValueError (with a message for the UI) for self-follows, unknown
+    users, or when the follow already exists; no relationship is created then.
     """
     if current_user_id == target_user_id:
-        raise ValueError("Users cannot follow themselves.")
+        raise ValueError("You can't follow yourself.")
 
     rows = db.execute_query(
         """
         MATCH (a:User {userId: $currentId}), (b:User {userId: $targetId})
         OPTIONAL MATCH (a)-[existing:FOLLOWS]->(b)
         WITH a, b, existing IS NOT NULL AS alreadyFollowing
-        MERGE (a)-[f:FOLLOWS]->(b)
-        ON CREATE SET f.since = date()
-        RETURN NOT alreadyFollowing AS created
+        CALL (a, b, alreadyFollowing) {
+          WITH a, b WHERE NOT alreadyFollowing
+          CREATE (a)-[:FOLLOWS {since: date()}]->(b)
+        }
+        RETURN alreadyFollowing, coalesce(b.displayName, b.username) AS name
         """,
         {"currentId": current_user_id, "targetId": target_user_id},
         write=True,
     )
     if not rows:
         raise ValueError(f"Unknown user: {current_user_id} or {target_user_id}")
-    return rows[0]["created"]
+    if rows[0]["alreadyFollowing"]:
+        raise ValueError(f"You already follow {rows[0]['name']}.")
+    return True
 
 
 def unfollow_user(current_user_id, target_user_id):
-    """Remove the follow. Returns True if one was deleted, False if none existed."""
+    """UC-6: remove the follow. Returns True if one was deleted, False if none existed."""
     rows = db.execute_query(
         """
         MATCH (:User {userId: $currentId})-[f:FOLLOWS]->(:User {userId: $targetId})
@@ -66,7 +71,7 @@ def is_following(current_user_id, target_user_id):
 
 
 def get_following(user_id):
-    """Users this user follows, most recent first."""
+    """UC-7 (Following): users this user follows, most recent first."""
     return db.execute_query(
         f"""
         MATCH (:User {{userId: $userId}})-[f:FOLLOWS]->(other:User)
@@ -78,7 +83,7 @@ def get_following(user_id):
 
 
 def get_followers(user_id):
-    """Users following this user, most recent first."""
+    """UC-7 (Followers): users following this user, most recent first."""
     return db.execute_query(
         f"""
         MATCH (other:User)-[f:FOLLOWS]->(:User {{userId: $userId}})
@@ -166,3 +171,90 @@ def get_ego_network(user_id, max_nodes=50):
     if not rows or not rows[0]["nodes"]:
         return {"nodes": [], "edges": []}
     return rows[0]
+
+
+def get_mutual_following(user_a, user_b):
+    """UC-8: users followed by both A and B, found with one graph pattern."""
+    return db.execute_query(
+        f"""
+        MATCH (:User {{userId: $a}})-[:FOLLOWS]->(m:User)<-[:FOLLOWS]-(:User {{userId: $b}})
+        RETURN {_summary('m')} AS user, COUNT {{ (m)<-[:FOLLOWS]-() }} AS followers
+        ORDER BY followers DESC, m.username
+        """,
+        {"a": user_a, "b": user_b},
+    )
+
+
+def get_two_hop_recommendations(user_id, limit=25):
+    """UC-9: people reached by exactly two FOLLOWS hops (me -> A -> B).
+
+    Excludes me and people I already follow; each person appears once, with
+    how many of the people I follow lead to them (and a few of their names).
+    """
+    return db.execute_query(
+        f"""
+        MATCH (me:User {{userId: $userId}})-[:FOLLOWS]->(a:User)-[:FOLLOWS]->(b:User)
+        WHERE b <> me AND NOT (me)-[:FOLLOWS]->(b)
+        WITH b, collect(DISTINCT coalesce(a.displayName, a.username)) AS via
+        RETURN {_summary('b')} AS user, size(via) AS viaCount, via[..3] AS viaNames,
+               COUNT {{ (b)<-[:FOLLOWS]-() }} AS followers
+        ORDER BY viaCount DESC, followers DESC, b.username
+        LIMIT $limit
+        """,
+        {"userId": user_id, "limit": limit},
+    )
+
+
+def get_popular_users(limit=25):
+    """UC-12: the most-followed users, most followers first."""
+    return db.execute_query(
+        f"""
+        MATCH (u:User)
+        WITH u, COUNT {{ (u)<-[:FOLLOWS]-() }} AS followers
+        ORDER BY followers DESC, u.username
+        LIMIT $limit
+        RETURN {_summary('u')} AS user, followers
+        """,
+        {"limit": limit},
+    )
+
+
+def degrees_of_separation(from_username, to_username, max_hops=4):
+    """UC-13: shortest directed FOLLOWS path from one user to another.
+
+    Returns {"from", "to", "found", "degrees", "path"} where path is the list
+    of users along the way. Raises ValueError for unknown usernames.
+    """
+    max_hops = int(max_hops)
+    rows = db.execute_query(
+        f"""
+        OPTIONAL MATCH (a:User {{username: $from}})
+        OPTIONAL MATCH (b:User {{username: $to}})
+        RETURN a IS NOT NULL AS fromExists, b IS NOT NULL AS toExists
+        """,
+        {"from": from_username, "to": to_username},
+    )
+    missing = [u for u, ok in ((from_username, rows[0]["fromExists"]), (to_username, rows[0]["toExists"]))
+               if not ok]
+    if missing:
+        raise ValueError("No user with username " + " or ".join(f"@{u}" for u in missing) + ".")
+    result = {"from": from_username, "to": to_username, "maxHops": max_hops}
+    if from_username == to_username:
+        return {**result, "found": True, "degrees": 0, "path": [_one_user(from_username)]}
+
+    rows = db.execute_query(
+        f"""
+        MATCH (a:User {{username: $from}}), (b:User {{username: $to}})
+        MATCH p = shortestPath((a)-[:FOLLOWS*..{max_hops}]->(b))
+        RETURN [n IN nodes(p) | {_summary('n')}] AS path, length(p) AS degrees
+        """,
+        {"from": from_username, "to": to_username},
+    )
+    if not rows:
+        return {**result, "found": False, "degrees": None, "path": []}
+    return {**result, "found": True, "degrees": rows[0]["degrees"], "path": rows[0]["path"]}
+
+
+def _one_user(username):
+    rows = db.execute_query(f"MATCH (u:User {{username: $u}}) RETURN {_summary('u')} AS user", {"u": username})
+    return rows[0]["user"]

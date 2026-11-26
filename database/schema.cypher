@@ -11,6 +11,10 @@ FOR (u:User) REQUIRE u.userId IS UNIQUE;
 CREATE CONSTRAINT user_username IF NOT EXISTS
 FOR (u:User) REQUIRE u.username IS UNIQUE;
 
+// App accounts have an email (imported Kaggle users don't; nulls are allowed)
+CREATE CONSTRAINT user_email IF NOT EXISTS
+FOR (u:User) REQUIRE u.email IS UNIQUE;
+
 CREATE CONSTRAINT skill_name IF NOT EXISTS
 FOR (s:Skill) REQUIRE s.name IS UNIQUE;
 
@@ -49,7 +53,8 @@ CREATE INDEX competition_segment IF NOT EXISTS FOR (c:Competition) ON (c.segment
 // Graph model (reference - not executable)
 //
 // (:User {userId, username, displayName, tier, country, registerDate,
-//         compTier, golds, silvers, bronzes, source})
+//         compTier, golds, silvers, bronzes, source,
+//         email, bio, passwordHash})   // last three only on app-registered users
 // tier/compTier values: novice | expert | master | grandmaster | staff
 // (:Skill {name, category, tagId})        // data type / task / technique / analysis / packages tags
 // (:Interest {name, category, tagId})     // subject tags (finance, health, sports, ...)

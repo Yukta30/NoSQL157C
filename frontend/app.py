@@ -55,6 +55,8 @@ invites = data.pending_invite_count(me) if me else 0
 pages = [
     st.Page("app_pages/discover.py", title="Home", icon=":material/home:", default=True),
     st.Page("app_pages/recommendations.py", title="For you", icon=":material/favorite:"),
+    st.Page("app_pages/people.py", title="People", icon=":material/group:"),
+    st.Page("app_pages/connections.py", title="Connections", icon=":material/route:"),
     st.Page("app_pages/team_builder.py", title="Team Builder", icon=":material/groups:"),
     st.Page("app_pages/projects.py", title="Projects", icon=":material/rocket_launch:"),
     st.Page("app_pages/inbox.py", title="Inbox", icon=":material/inbox:", url_path="inbox"),

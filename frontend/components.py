@@ -16,6 +16,8 @@ PROFILE = "app_pages/profile.py"
 NETWORK = "app_pages/network.py"
 RECOMMENDATIONS = "app_pages/recommendations.py"
 PROJECTS = "app_pages/projects.py"
+PEOPLE = "app_pages/people.py"
+CONNECTIONS = "app_pages/connections.py"
 INBOX = "app_pages/inbox.py"
 TEAM_BUILDER = "app_pages/team_builder.py"
 
@@ -245,6 +247,22 @@ def tag_picker(tags, key_prefix, default=(), persist=False, style="chips", colum
 def medals_text(user):
     """'gold · silver · bronze' counts, short enough for a metric column."""
     return " · ".join(str(user.get(m + "s", 0)) for m in ("gold", "silver", "bronze"))
+
+
+def follow_toggle(me, user, following, key):
+    """Follow / Following button for lists, when the caller already knows the status.
+    Always clickable (even on your own row), so the backend's error messages show:
+    "You can't follow yourself." / "You already follow X." (UC-5)."""
+    st.button(
+        "Following" if following else "Follow",
+        key=key,
+        icon=":material/check:" if following else ":material/person_add:",
+        type="secondary" if following else "primary",
+        help="Click to unfollow" if following else None,
+        on_click=_toggle_follow,
+        args=(me, user["userId"], display_name(user), following),
+        width="stretch",
+    )
 
 
 def bullets(lines):
